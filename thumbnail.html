@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>숨바꼭질 썸네일</title>
+<style>html,body{margin:0;background:#000}svg{display:block}</style></head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="wallL" x1="0" x2="1"><stop offset="0" stop-color="#0d0f1e"/><stop offset="1" stop-color="#1c1d33"/></linearGradient>
+    <linearGradient id="wallR" x1="1" x2="0"><stop offset="0" stop-color="#0b0c18"/><stop offset="1" stop-color="#1a1a30"/></linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a1d14"/><stop offset="1" stop-color="#0c0806"/></linearGradient>
+    <radialGradient id="doorGlow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ff3b2f" stop-opacity=".55"/><stop offset="1" stop-color="#ff3b2f" stop-opacity="0"/></radialGradient>
+    <linearGradient id="beam" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff3c4" stop-opacity=".75"/><stop offset=".6" stop-color="#ffe7a0" stop-opacity=".22"/><stop offset="1" stop-color="#ffe7a0" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="spot" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ffefb8" stop-opacity=".45"/><stop offset="1" stop-color="#ffefb8" stop-opacity="0"/></radialGradient>
+    <radialGradient id="vig" cx="0.5" cy="0.5" r="0.75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".85"/></radialGradient>
+    <radialGradient id="eyeGlow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ff2a2a" stop-opacity=".9"/><stop offset="1" stop-color="#ff2a2a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="moon" cx="0.4" cy="0.4" r="0.6"><stop offset="0" stop-color="#fdf6d8"/><stop offset="1" stop-color="#c9c3a4"/></radialGradient>
+    <filter id="glowRed" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="titleShadow" x="-10%" y="-30%" width="120%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="0" flood-color="#5a0000"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="14" flood-color="#ff2222" flood-opacity=".75"/>
+    </filter>
+    <filter id="blur8"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+
+  <!-- 복도 -->
+  <rect width="1280" height="720" fill="#07070f"/>
+  <polygon points="0,0 470,170 470,470 0,720" fill="url(#wallL)"/>
+  <polygon points="1280,0 810,170 810,470 1280,720" fill="url(#wallR)"/>
+  <polygon points="0,0 1280,0 810,170 470,170" fill="#0a0a14"/>
+  <polygon points="0,720 470,470 810,470 1280,720" fill="url(#floor)"/>
+  <!-- 마루 선 -->
+  <g stroke="#000" stroke-opacity=".45" stroke-width="2">
+    <line x1="560" y1="470" x2="330" y2="720"/><line x1="640" y1="470" x2="640" y2="720"/><line x1="720" y1="470" x2="950" y2="720"/>
+    <line x1="500" y1="470" x2="80" y2="720"/><line x1="780" y1="470" x2="1200" y2="720"/>
+    <line x1="430" y1="520" x2="850" y2="520"/><line x1="330" y1="580" x2="950" y2="580"/><line x1="200" y1="650" x2="1080" y2="650"/>
+  </g>
+  <!-- 벽지 줄무늬 -->
+  <g stroke="#2a2b48" stroke-opacity=".5" stroke-width="3">
+    <line x1="80" y1="30" x2="80" y2="678"/><line x1="170" y1="62" x2="170" y2="630"/><line x1="260" y1="95" x2="260" y2="583"/><line x1="350" y1="127" x2="350" y2="535"/>
+    <line x1="1200" y1="30" x2="1200" y2="678"/><line x1="1110" y1="62" x2="1110" y2="630"/><line x1="1020" y1="95" x2="1020" y2="583"/><line x1="930" y1="127" x2="930" y2="535"/>
+  </g>
+
+  <!-- 창문 + 달 (왼쪽 벽) -->
+  <polygon points="250,150 380,185 380,320 250,320" fill="#0e1a36" stroke="#3a2a1c" stroke-width="8"/>
+  <circle cx="320" cy="225" r="32" fill="url(#moon)"/>
+  <circle cx="335" cy="218" r="30" fill="#0e1a36"/>
+  <line x1="315" y1="168" x2="315" y2="320" stroke="#3a2a1c" stroke-width="6"/>
+  <line x1="250" y1="250" x2="380" y2="262" stroke="#3a2a1c" stroke-width="6"/>
+
+  <!-- 끝의 문 + 붉은 빛 -->
+  <ellipse cx="640" cy="330" rx="260" ry="200" fill="url(#doorGlow)"/>
+  <rect x="560" y="210" width="160" height="260" fill="#150808"/>
+  <rect x="560" y="210" width="160" height="260" fill="none" stroke="#3b2414" stroke-width="10"/>
+
+  <!-- 괴물 -->
+  <g transform="translate(640 480) scale(0.78)">
+    <ellipse cx="0" cy="6" rx="110" ry="16" fill="#000" opacity=".6"/>
+    <!-- 다리 -->
+    <path d="M-30,-120 L-48,0 L-20,0 L-8,-110 Z M30,-120 L48,0 L20,0 L8,-110 Z" fill="#05030a"/>
+    <!-- 몸통 털 -->
+    <path d="M-70,-120 Q-95,-230 -60,-300 Q0,-345 60,-300 Q95,-230 70,-120 Q40,-95 0,-100 Q-40,-95 -70,-120 Z" fill="#07040c"/>
+    <path d="M-70,-130 l-22,18 l14,-30 l-24,6 l18,-26 M70,-130 l22,18 l-14,-30 l24,6 l-18,-26" stroke="#07040c" stroke-width="8" fill="none" stroke-linejoin="round"/>
+    <!-- 긴 팔 + 발톱 -->
+    <path d="M-55,-280 Q-140,-200 -150,-60" stroke="#05030a" stroke-width="20" fill="none" stroke-linecap="round"/>
+    <path d="M55,-280 Q150,-210 170,-80" stroke="#05030a" stroke-width="20" fill="none" stroke-linecap="round"/>
+    <g stroke="#d9d4cc" stroke-width="4" stroke-linecap="round">
+      <path d="M-150,-60 l-12,32 M-150,-60 l0,36 M-150,-60 l12,32"/>
+      <path d="M170,-80 l-10,34 M170,-80 l4,36 M170,-80 l16,30"/>
+    </g>
+    <!-- 머리 + 뿔 -->
+    <circle cx="0" cy="-330" r="48" fill="#07040c"/>
+    <path d="M-30,-365 L-62,-430 L-12,-372 Z M30,-365 L62,-430 L12,-372 Z" fill="#1a1210"/>
+    <!-- 눈 -->
+    <circle cx="-19" cy="-338" r="28" fill="url(#eyeGlow)"/>
+    <circle cx="19" cy="-338" r="28" fill="url(#eyeGlow)"/>
+    <g filter="url(#glowRed)"><ellipse cx="-19" cy="-338" rx="10" ry="6" fill="#ff3030"/><ellipse cx="19" cy="-338" rx="10" ry="6" fill="#ff3030"/></g>
+    <!-- 입 -->
+    <path d="M-26,-308 Q0,-290 26,-308 L22,-302 Q0,-286 -22,-302 Z" fill="#3a0000"/>
+    <path d="M-20,-305 l5,10 l5,-9 l5,10 l5,-10 l5,10 l5,-10 l5,9" stroke="#eee" stroke-width="2.5" fill="none"/>
+  </g>
+
+  <!-- 손전등 빛 -->
+  <polygon points="150,760 330,760 900,180 560,140" fill="url(#beam)"/>
+  <ellipse cx="660" cy="300" rx="150" ry="170" fill="url(#spot)"/>
+
+  <!-- 옷장 (왼쪽) + 숨은 아이 -->
+  <g transform="translate(40 300)">
+    <rect x="0" y="0" width="200" height="380" fill="#3b2414" stroke="#24150b" stroke-width="6"/>
+    <rect x="12" y="14" width="84" height="352" fill="#4a2e1a"/>
+    <rect x="104" y="14" width="84" height="352" fill="#4a2e1a"/>
+    <g stroke="#2a190d" stroke-width="5">
+      <line x1="20" y1="60" x2="88" y2="60"/><line x1="20" y1="80" x2="88" y2="80"/><line x1="20" y1="100" x2="88" y2="100"/>
+    </g>
+    <!-- 살짝 열린 문틈 -->
+    <rect x="90" y="14" width="22" height="352" fill="#000"/>
+    <ellipse cx="96" cy="160" rx="5" ry="6" fill="#fff"/><ellipse cx="108" cy="160" rx="5" ry="6" fill="#fff"/>
+    <circle cx="97" cy="161" r="2.5" fill="#111"/><circle cx="109" cy="161" r="2.5" fill="#111"/>
+    <circle cx="92" cy="200" r="5" fill="#caa75e"/><circle cx="110" cy="200" r="5" fill="#caa75e"/>
+  </g>
+
+  <!-- 웅크린 친구 (오른쪽, 안전모) -->
+  <g transform="translate(1070 610)">
+    <ellipse cx="0" cy="70" rx="80" ry="14" fill="#000" opacity=".6"/>
+    <path d="M-55,70 Q-60,10 -20,-5 L30,-5 Q62,10 55,70 Z" fill="#c4611a"/>
+    <rect x="-50" y="40" width="100" height="30" rx="12" fill="#2c3e50"/>
+    <circle cx="0" cy="-35" r="34" fill="#f1c9a0"/>
+    <path d="M-36,-40 A36,36 0 0 1 36,-40 L42,-36 L-42,-36 Z" fill="#f2c230"/>
+    <circle cx="-11" cy="-30" r="4" fill="#111"/><circle cx="11" cy="-30" r="4" fill="#111"/>
+    <ellipse cx="0" cy="-14" rx="6" ry="4" fill="#9b3a3a"/>
+    <path d="M-38,-10 Q-58,20 -30,40" stroke="#f1c9a0" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <path d="M38,-10 Q58,20 30,40" stroke="#f1c9a0" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <text x="-30" y="-78" font-size="40">💦</text>
+  </g>
+
+  <!-- 판자로 막은 문 느낌 (오른쪽 벽) -->
+  <g transform="translate(905 230) skewY(-18)">
+    <rect x="0" y="0" width="90" height="230" fill="#120c08"/>
+    <rect x="-10" y="40" width="110" height="22" fill="#a26b36"/>
+    <rect x="-10" y="110" width="110" height="22" fill="#8b5a2b"/>
+    <rect x="-10" y="180" width="110" height="22" fill="#a26b36"/>
+  </g>
+
+  <rect width="1280" height="720" fill="url(#vig)"/>
+
+  <!-- 시계 -->
+  <g transform="translate(1175 95) scale(0.8)">
+    <circle r="62" fill="#111" stroke="#e8e0c8" stroke-width="6"/>
+    <g stroke="#e8e0c8" stroke-width="5" stroke-linecap="round"><line x1="0" y1="0" x2="0" y2="-40"/><line x1="0" y1="0" x2="26" y2="10"/></g>
+    <circle r="6" fill="#ff4040"/>
+  </g>
+  <text x="1175" y="185" text-anchor="middle" font-family="'Malgun Gothic',sans-serif" font-weight="900" font-size="30" fill="#ffe7a0" stroke="#000" stroke-width="6" paint-order="stroke">12:00 → 6:00</text>
+
+  <!-- 제목 -->
+  <g font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif" font-weight="900" text-anchor="middle">
+    <text x="640" y="118" font-size="112" fill="#fff" stroke="#1a0000" stroke-width="14" paint-order="stroke" filter="url(#titleShadow)" letter-spacing="4">한밤의 숨바꼭질</text>
+    <text x="640" y="118" font-size="112" fill="#fff" letter-spacing="4">한밤의 <tspan fill="#ff3b3b">숨바꼭질</tspan></text>
+  </g>
+  <g font-family="'Malgun Gothic',sans-serif" font-weight="800" text-anchor="middle">
+    <rect x="340" y="608" width="600" height="70" rx="35" fill="#c81e1e" stroke="#000" stroke-width="5"/>
+    <text x="640" y="656" font-size="36" fill="#fff">새벽 6시까지 살아남아라!</text>
+  </g>
+</svg>
+</body></html>

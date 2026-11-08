@@ -12,7 +12,10 @@
   #stage { position:absolute; inset:0; }
   #stage canvas, #closet, #ending { position:absolute; left:0; top:0; width:100%; height:100%; display:block; }
   #closet { pointer-events:none; background:repeating-linear-gradient(180deg, rgba(20,12,6,.97) 0 26px, rgba(20,12,6,.55) 26px 34px); }
-  #closet::after { content:"🚪 옷장 안에 숨어 있어요 — 괴물이 절대 찾지 못해요 (E: 나가기)"; position:absolute; left:0; right:0; bottom:22%; text-align:center; color:#ffd9a0; font-size:16px; text-shadow:0 1px 3px #000; }
+  /* 침대 밑: 위쪽은 침대 판이 가리고, 아래쪽 틈으로 방바닥이 보임 */
+  #closet.underbed { background:linear-gradient(180deg, rgba(25,15,8,.97) 0 38%, rgba(25,15,8,.8) 44%, rgba(0,0,0,0) 54%, rgba(0,0,0,.25) 100%); }
+  #closet::after { bottom:auto !important; top:24%; }
+  #closet::after { content:attr(data-msg); position:absolute; left:0; right:0; bottom:22%; text-align:center; color:#ffd9a0; font-size:16px; text-shadow:0 1px 3px #000; }
   #ending { pointer-events:none; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; text-align:center; text-shadow:0 3px 10px rgba(120,60,0,.8); }
   #ending h2 { font-size:44px; margin:0; }
   #ending p { font-size:20px; margin:8px 0 0; }
@@ -50,6 +53,60 @@
   #bCrouch { right:calc(24px + env(safe-area-inset-right)); bottom:calc(24px + env(safe-area-inset-bottom)); }
   #bUse { right:calc(116px + env(safe-area-inset-right)); bottom:calc(60px + env(safe-area-inset-bottom)); }
   #bFlash { right:calc(24px + env(safe-area-inset-right)); bottom:calc(116px + env(safe-area-inset-bottom)); font-size:26px; }
+  #bJump { right:calc(208px + env(safe-area-inset-right)); bottom:calc(24px + env(safe-area-inset-bottom)); }
+  /* 숨은 곳에서 나가기 버튼 (화면 아래 가운데) */
+  #bLeave { position:fixed; left:50%; transform:translateX(-50%); top:calc(24% + 40px); width:auto; height:auto; border-radius:12px; padding:12px 26px; font-size:17px; font-weight:bold; z-index:7; cursor:pointer; background:rgba(255,200,120,.25); border-color:rgba(255,210,140,.8); }
+  /* 👁️ 오래 숨어 있으면: 지지직 / "나가" / 점프스케어 */
+  #static { position:fixed; inset:0; width:100%; height:100%; z-index:6; pointer-events:none; opacity:0; image-rendering:pixelated; mix-blend-mode:screen; }
+  #getout { position:fixed; z-index:9; pointer-events:none; transform:translate(-50%,-50%); white-space:nowrap; font-weight:900; color:#ff1414; letter-spacing:.06em;
+            font-family:"Malgun Gothic",sans-serif; text-shadow:4px 0 rgba(0,255,255,.55), -4px 0 rgba(255,0,0,.8), 0 0 24px #f00; animation:glitch .09s steps(2) infinite; }
+  @keyframes glitch { 0% { clip-path:inset(0 0 55% 0); margin-left:-6px; } 50% { clip-path:inset(40% 0 0 0); margin-left:7px; } 100% { clip-path:inset(0 0 0 0); margin-left:0; } }
+  #scare { position:fixed; inset:0; width:100%; height:100%; z-index:50; pointer-events:none; }
+  #wrap.shake, #hud.shake { animation:shake .06s linear infinite; }
+  @keyframes shake { 0% { transform:translate(8px,-6px); } 33% { transform:translate(-9px,5px); } 66% { transform:translate(5px,9px); } 100% { transform:translate(-6px,-8px); } }
+  /* 💓 숨 고르기 미니게임 */
+  #calm { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(16% + 44px); width:min(440px, calc(100vw - 32px)); box-sizing:border-box; z-index:7; background:rgba(10,4,6,.82); border:2px solid #a8323e; border-radius:14px; padding:10px 14px 12px; text-align:center; color:#fff; }
+  #calm.hit { border-color:#6fe08a; } #calm.miss { border-color:#ff4b4b; background:rgba(60,4,8,.9); }
+  #calmTop { font-size:15px; margin-bottom:6px; } #calmTop small { color:#ffb3b3; font-size:12px; }
+  #calmBpm { font-size:20px; color:#ff6b6b; }
+  #calmHeart { display:inline-block; }
+  #calmMeter { height:8px; background:#2a1a1d; border-radius:4px; overflow:hidden; margin-bottom:8px; }
+  #calmMeter i { display:block; height:100%; width:0; background:linear-gradient(90deg, #f0c040, #ff3b3b); }
+  #calmBar { position:relative; height:26px; background:#241c20; border:1px solid #555; border-radius:13px; overflow:hidden; }
+  #calmZone { position:absolute; top:0; bottom:0; background:rgba(80,210,110,.55); border-left:2px solid #6fe08a; border-right:2px solid #6fe08a; }
+  #calmNeedle { position:absolute; top:-2px; bottom:-2px; width:4px; margin-left:-2px; background:#fff; box-shadow:0 0 8px #fff; border-radius:2px; }
+  #calmHelp { font-size:13px; margin-top:6px; color:#ddd; }
+  #bCalm { display:none; margin-top:8px; font:inherit; font-size:17px; font-weight:bold; color:#fff; background:rgba(255,90,110,.3); border:2px solid #ff7b8b; border-radius:12px; padding:10px 24px; cursor:pointer; }
+  body.touch #bCalm { display:inline-block; }
+  /* ---------- 📱 폰/태블릿 (터치) 배치 ---------- */
+  /* 오른손 버튼 묶음: 2열 × 3줄 (행동이 엄지 바로 아래 구석) */
+  body.touch { --tb:66px; --sr:env(safe-area-inset-right); --sb:env(safe-area-inset-bottom); --sl:env(safe-area-inset-left); }
+  @media (max-height:420px), (max-width:380px) { body.touch { --tb:58px; } }
+  body.touch #touch .tbtn { width:var(--tb); height:var(--tb); font-size:13px; }
+  body.touch #bUse    { right:calc(16px + var(--sr)); bottom:calc(16px + var(--sb)); background:rgba(255,220,120,.18); border-color:rgba(255,220,120,.55); }
+  body.touch #bJump   { right:calc(26px + var(--tb) + var(--sr)); bottom:calc(16px + var(--sb)); }
+  body.touch #bCrouch { right:calc(16px + var(--sr)); bottom:calc(26px + var(--tb) + var(--sb)); }
+  body.touch #bFlash  { right:calc(26px + var(--tb) + var(--sr)); bottom:calc(26px + var(--tb) + var(--sb)); font-size:22px; }
+  body.touch #bMap    { right:calc(16px + var(--sr)); bottom:calc(36px + 2 * var(--tb) + var(--sb)); width:var(--tb); height:var(--tb); }
+  /* 그만두기: 왼쪽 조이스틱 위 작은 버튼 (엄지 버튼들과 멀리) */
+  body.touch #bQuit   { left:calc(16px + var(--sl)); right:auto; bottom:calc(170px + var(--sb)); width:52px; height:52px; font-size:11px; }
+  /* 숨어 있을 때: 움직일 수 없으니 조이스틱·버튼 숨기고, 위 = 안내·나가기 / 아래 = 심박수 창 */
+  body.touch.hiding #touch { display:none !important; }
+  body.touch.hiding #closet::after { top:14% !important; }
+  body.touch.hiding #bLeave { top:calc(14% + 34px); }
+  body.touch #calm { top:auto !important; bottom:calc(12px + var(--sb)); }
+  body.touch.hiding #msg { bottom:calc(215px + var(--sb)) !important; }
+  body.touch.hiding #friends, body.touch.hiding #bMap, body.touch.hiding #bQuit { display:none !important; }   /* 숨어 있을 땐 안내·나가기·심박수 창만 */
+  @media (max-width:500px) { body.touch #calmTop small { display:none; } }
+  @media (max-height:500px) {
+    body.touch #calmHelp { display:none; }
+    body.touch #calm { padding:6px 12px 8px; }
+    body.touch #calmTop { margin-bottom:4px; }
+    body.touch #bCalm { padding:7px 22px; margin-top:6px; }
+    body.touch.hiding #msg { bottom:calc(150px + var(--sb)) !important; }
+  }
+  /* 게임 그만두기 (처음 화면으로) */
+  #bQuit { position:fixed; right:88px; bottom:16px; width:64px; height:64px; z-index:6; font-size:12px; line-height:1.2; flex-direction:column; cursor:pointer; }
   /* 지도 버튼 (PC: 오른쪽 아래 / 폰: 버튼 묶음 위쪽) */
   #bMap { position:fixed; right:16px; bottom:16px; width:64px; height:64px; z-index:6; font-size:12px; line-height:1.2; flex-direction:column; cursor:pointer; }
   #bMap.on { background:rgba(255,220,120,.35); border-color:rgba(255,220,120,.8); }
@@ -99,9 +156,22 @@
   <div id="stick"><div id="knob"></div></div>
   <button class="tbtn" id="bUse">행동<br>(E)</button>
   <button class="tbtn" id="bCrouch">웅크리기</button>
+  <button class="tbtn" id="bJump">점프</button>
   <button class="tbtn" id="bFlash">🔦</button>
 </div>
 <button class="tbtn" id="bMap">🗺<br>지도</button>
+<button class="tbtn hidden" id="bQuit">⏏<br>나가기</button>
+<button class="tbtn hidden" id="bLeave">🚪 나가기</button>
+<canvas id="static" width="200" height="125"></canvas>
+<div id="getout" class="hidden"></div>
+<canvas id="scare" class="hidden"></canvas>
+<div id="calm" class="hidden">
+  <div id="calmTop"><span id="calmHeart">💓</span> 심박수 <b id="calmBpm">70</b> BPM <small>— 괴물이 가까이 있어요! 숨을 골라요</small></div>
+  <div id="calmMeter"><i id="calmMeterFill"></i></div>
+  <div id="calmBar"><div id="calmZone"></div><div id="calmNeedle"></div></div>
+  <div id="calmHelp"><span class="keyOnly">바늘이 <b style="color:#6fe08a">초록 칸</b>에 올 때 <b>Space</b>!</span><span class="touchOnly">바늘이 <b style="color:#6fe08a">초록 칸</b>에 올 때 버튼!</span></div>
+  <button id="bCalm">💓 숨 고르기</button>
+</div>
 
 <div class="overlay" id="startScreen">
   <h1>한밤의 숨바꼭질</h1>
@@ -111,10 +181,15 @@
      🔫 숨기팀은 <b>비비탄총(탄약 10발)</b>을 갖고 있어요. 한 발 맞으면 괴물이 <b>10초</b>, 세 발이면 <b>30초</b> 동안 움직이지 못합니다.</p>
   <p>당신도 도구를 주워(자동) 문 앞에서 <b>E</b>를 눌러 문을 막을 수 있어요.<br>
      <span style="color:var(--hunger)">배고픔</span>·<span style="color:var(--thirst)">목마름</span>이 0이 되면 체력이 줄어드니 <b>부엌</b>의 냉장고·싱크대에서 E로 먹고 마시세요.</p>
-  <p><b>웅크리면 괴물이 절대 찾지 못합니다.</b> (당신도, 친구들도) 대신 느려지고, 먹거나 문을 막을 때는 일어서야 해요.</p>
+  <p><b>웅크리면 괴물 눈에 보이지 않습니다.</b> (당신도, 친구들도) 대신 느려지고, 먹거나 문을 막을 때는 일어서야 해요.<br>
+     ☠️ 단, <b>괴물에게 너무 가까이 가면</b> 웅크려 있어도 잡혀요!</p>
+  <p>💓 숨어 있는데 괴물이 가까이 오면 <b>심장이 빨리 뛰어요.</b> 움직이는 바늘이 <b style="color:#6fe08a">초록 칸</b>에 올 때 <b>Space</b>(폰: 숨 고르기 버튼)를 눌러 심박수를 낮추세요. 심박수가 끝까지 차면 괴물이 심장 소리를 듣고 찾아와요!</p>
+  <p>🚪 집 곳곳의 <b>옷장·수납장·큰 상자</b> 앞에서 <b>E</b>를 누르면 그 안에, 🛏️ <b>침대</b>(침실·서재) 옆에서 누르면 침대 밑에 숨어요. 다시 누르면 나와요.<br>
+     단, 괴물에게 <b>쫓기다가 숨는 걸 들키면</b> 괴물이 열러 옵니다! 그땐 빨리 나와서 도망치세요.<br>
+     👁️ 그리고… <b>한 곳에 너무 오래 숨어 있지 마세요.</b> 그 안에 있는 게 당신만은 아닐지도 몰라요.</p>
   <p>🔦 <b>1인칭 시점</b>입니다. 집 안은 아주 어두워요. 작은 지도와 🗺 집 전체 지도를 보며 움직이세요.</p>
-  <p class="keys keyOnly">W/S(↑/↓): 앞뒤 이동 · A/D(←/→) 또는 마우스(화면 클릭): 둘러보기 · F: 손전등 켜기/끄기<br>C 또는 Shift: 웅크리기 · E 길게: 먹기/문 막기/친구 살리기 · Q: 직업 기술 · M: 집 전체 지도 · Esc: 마우스 해제</p>
-  <p class="keys touchOnly">📱 왼쪽 조이스틱: 위아래로 이동 · 좌우로 둘러보기<br>행동 길게: 먹기/문 막기/친구 살리기 · 웅크리기 · 직업 버튼(🔦/🗡️/🔫/🍱) · 🗺 집 전체 지도</p>
+  <p class="keys keyOnly">W/S(↑/↓): 앞뒤 이동 · A/D(←/→) 또는 마우스(화면 클릭): 둘러보기 · F: 손전등 켜기/끄기<br>C 또는 Shift: 웅크리기 · Space: 점프 · E: 옷장·상자에 숨기/나오기 · E 길게: 먹기/문 막기/친구 살리기 · Q: 직업 기술 · M: 집 전체 지도 · Esc: 마우스 해제</p>
+  <p class="keys touchOnly">📱 왼쪽 조이스틱: 위아래로 이동 · 좌우로 둘러보기<br>행동: 옷장·상자·침대 밑에 숨기/나오기 · 행동 길게: 먹기/문 막기/친구 살리기 · 웅크리기 · 점프 · 💓 숨 고르기(숨어 있을 때) · 직업 버튼(🔦/🗡️/🔫/🍱) · 🗺 집 전체 지도</p>
   <p style="margin-top:14px"><b>1. 직업을 선택하세요</b></p>
   <div class="jobs" id="jobPick">
     <button data-job="survival" class="sel">🔦 서바이벌<small>손전등을 가지고 시작 (F)</small></button>
@@ -166,7 +241,29 @@ const MAP = [
   "#.........#..........#.......#",
   "##############################",
 ];
-const SOLID = '#bcTtdxFSwW';
+// 숨을 수 있는 오브젝트 (옷장·수납장·큰 상자) — x,y: 놓인 칸 / fx,fy: 앞쪽(들어가고 나오는) 칸
+const HIDE_OBJS = [
+  { name:'침실 옷장',   kind:'wardrobe', x:8,  y:1,  fx:8,  fy:2 },
+  { name:'거실 옷장',   kind:'wardrobe', x:11, y:4,  fx:12, fy:4 },
+  { name:'부엌 찬장',   kind:'cabinet',  x:21, y:7,  fx:21, fy:6 },
+  { name:'욕실 수납장', kind:'cabinet',  x:8,  y:12, fx:8,  fy:13 },
+  { name:'서재 옷장',   kind:'wardrobe', x:19, y:18, fx:19, fy:17 },
+  { name:'창고 큰 상자', kind:'crate',   x:23, y:18, fx:23, fy:17 },
+  // 침대 (밑에 숨기) — 침실 침대는 원래 있던 가구(b), 서재 침대는 새로 놓음
+  { name:'침실 침대', kind:'bed', x:2,  y:2,  w:3, h:2, existing:true },
+  { name:'서재 침대', kind:'bed', x:16, y:17, w:3, h:2, blanket:'#8e5bd6' },
+];
+HIDE_OBJS.forEach(o => {
+  o.w = o.w || 1; o.h = o.h || 1; o.cx = o.x + o.w / 2; o.cy = o.y + o.h / 2;
+  if (o.existing) return;
+  for (let y = o.y; y < o.y + o.h; y++) for (let x = o.x; x < o.x + o.w; x++) MAP[y] = MAP[y].slice(0, x) + 'K' + MAP[y].slice(x + 1);
+});
+// 사람(e)과 오브젝트 사각형 사이의 가장 가까운 거리
+const objDist = (e, o) => Math.hypot(Math.max(o.x - e.x, 0, e.x - o.x - o.w), Math.max(o.y - e.y, 0, e.y - o.y - o.h));
+const HIDE_ICON = o => o.kind === 'crate' ? '📦' : o.kind === 'bed' ? '🛏️' : '🚪';
+const HIDE_IN = o => o.kind === 'bed' ? '밑에' : '안에';
+const HIDE_OPEN = o => o.kind === 'bed' ? `${o.name} 밑을 들여다봤` : `${o.name}을(를) 열었`;
+const SOLID = '#bcTtdxFSwWK';
 const tile = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? '#' : MAP[y][x];
 const isSolid = (x, y) => SOLID.includes(tile(x, y));
 
@@ -238,10 +335,12 @@ function toggleMap() { showMap = !showMap; $('bMap').classList.toggle('on', show
 
 // ---------- Input ----------
 const keys = {};
-let crouchToggle = false, useTouch = false;
+let crouchToggle = false, useTouch = false, hidePress = false, jumpPress = false;
 const touchMove = { x:0, y:0 };
 addEventListener('keydown', e => {
   keys[e.code] = true;
+  if (e.code === 'KeyE' && !e.repeat) hidePress = true;
+  if (e.code === 'Space' && !e.repeat) { if (G && G.p.hidden) calmPress(); else jumpPress = true; }   // 숨어 있을 땐 Space = 숨 고르기
   if (e.code === 'KeyC' && !e.repeat) crouchToggle = !crouchToggle;
   if (e.code === 'KeyF' && !e.repeat) toggleFlash();
   if (e.code === 'KeyM' && !e.repeat) toggleMap();
@@ -278,7 +377,21 @@ cv.addEventListener('mousedown', () => { if (document.pointerLockElement === cv 
 cv.addEventListener('click', () => { if (running && !G.over && cv.requestPointerLock) cv.requestPointerLock(); });
 addEventListener('mousemove', e => { if (document.pointerLockElement === cv) mouseDX += e.movementX; });
 const bUse = $('bUse');
-bUse.addEventListener('pointerdown', e => { e.preventDefault(); useTouch = true; });
+bUse.addEventListener('pointerdown', e => { e.preventDefault(); useTouch = true; hidePress = true; });
+$('bJump').addEventListener('pointerdown', e => { e.preventDefault(); jumpPress = true; });
+// 💓 숨 고르기 버튼 (폰 / 마우스)
+$('bCalm').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); calmPress(); });
+// 숨은 곳에서 나가기
+$('bLeave').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); hidePress = true; });
+// 게임 그만두고 처음 화면으로
+$('bQuit').addEventListener('click', e => {
+  e.stopPropagation();
+  if (!running || !G || G.over) return;
+  if (!confirm('게임을 그만두고 처음 화면으로 나갈까요?')) return;
+  if (document.exitPointerLock && document.pointerLockElement) document.exitPointerLock();
+  running = false; showMap = false; $('bMap').classList.remove('on');
+  $('endScreen').classList.add('hidden'); $('startScreen').classList.remove('hidden');
+});
 ['pointerup','pointercancel','pointerleave'].forEach(t => bUse.addEventListener(t, () => { useTouch = false; }));
 
 // ---------- Audio ----------
@@ -371,13 +484,17 @@ function reset() {
   G = null;
   const g = {
     t: 0, over: false,
-    p: { x:15.5, y:9.5, r:0.3, crouch:false, dir:0, step:0, tools:0, isPlayer:true, name:'나', shirt:'#2f6fd6', pants:'#2c3e50', hair:'#2b1d14', skin:'#f3cfa8' },
+    p: { x:15.5, y:9.5, r:0.3, crouch:false, z:0, vz:0, hidden:null, dir:0, step:0, tools:0, isPlayer:true, name:'나', shirt:'#2f6fd6', pants:'#2c3e50', hair:'#2b1d14', skin:'#f3cfa8' },
     m: { x:3.5, y:15.5, r:0.35, state:'idle', dir:0, path:[], repath:0, target:null, tgt:null, last:null, searchT:0, wake:DIFF.wake, step:0, eat:0, bashing:-1, stun:0 },
     hunger: 100, thirst: 100, hp: 100,
     use: 0, useTarget: null, flash: '', flashT: 0, beat: 0, seenT: 0,
     doors: DOOR_DEFS.map(([name, tiles]) => ({ name, tiles, hp:0, claim:null, warned:0 })),
     tools: [], toolT: 0, friends: [], log: [], bashSnd: 0,
     pellets: [], fireLock: 0,
+    // 💓 숨 고르기 미니게임
+    heart: 0, calmOn: false, needle: 0, needleDir: 1, zone: 0.5, zoneW: 0.24, calmFx: 0,
+    // 👁️ 오래 숨어 있으면 생기는 일
+    hideT: 0, hauntN: 0, getOutT: 0, getOutText: '', scareT: 0,
     // 직업 아이템
     ammo: GUN_AMMO, atkCD: 0, swing: 0, kits: KITS, food: FOOD_PACKS, reviveF: null,
   };
@@ -418,14 +535,38 @@ function update(dt) {
   G.t += dt;
   p.crouch = crouchToggle || keys.ShiftLeft || keys.ShiftRight;
 
-  const using = (keys.KeyE || keys.Space || useTouch);
+  const using = (keys.KeyE || useTouch);
   // interaction target
   const door = nearDoor(p);
   // 서포터: 잡힌 친구 옆이면 구급상자로 살리기
   G.reviveF = (JOB === 'supporter' && G.kits > 0) ? G.friends.find(f => f.dead && dist(f, p) < 1.3) || null : null;
-  G.useTarget = nearTile(FRIDGE.x, FRIDGE.y) ? 'food' : nearTile(SINK.x, SINK.y) ? 'water'
+  G.useTarget = p.hidden ? null : nearTile(FRIDGE.x, FRIDGE.y) ? 'food' : nearTile(SINK.x, SINK.y) ? 'water'
               : G.reviveF ? 'revive'
               : (door && p.tools > 0 && door.hp < MAX_DOOR_HP) ? 'door' : null;
+
+  // 숨는 오브젝트: E(행동)를 한 번 누르면 들어가고, 다시 누르면 나온다
+  G.hideObj = (!p.hidden && !G.useTarget && p.z <= 0)
+    ? HIDE_OBJS.filter(o => objDist(p, o) < 0.95).sort((a, b) => objDist(p, a) - objDist(p, b))[0] || null : null;
+  if (hidePress) { if (p.hidden) leaveHide(); else if (G.hideObj) enterHide(G.hideObj); }
+  hidePress = false;
+
+  // 👁️ 25초 넘게 숨어 있으면: 지지직 → "나가" 3번 → 점프스케어 (체력 -25, 강제로 나가짐)
+  if (p.hidden) {
+    G.hideT += dt;
+    if (G.hideT >= HAUNT_AT) {
+      const n = 1 + Math.floor((G.hideT - HAUNT_AT) / HAUNT_GAP);
+      if (n > G.hauntN && n <= 3) { G.hauntN = n; showGetOut(n); }
+      if (G.hauntN >= 3 && G.hideT >= HAUNT_AT + HAUNT_GAP * 2 + 0.9) { jumpScare(); if (G.over) return; }
+    }
+  } else { G.hideT = 0; G.hauntN = 0; }
+
+  // 점프 (Space / 점프 버튼) — 웅크리거나 숨어 있을 땐 못 함
+  if (jumpPress && !p.hidden && !p.crouch && p.z <= 0) { p.vz = 3.6; beep(420, 0.06, 0.08); }
+  jumpPress = false;
+  if (p.z > 0 || p.vz > 0) {
+    p.vz -= 12 * dt; p.z += p.vz * dt;
+    if (p.z <= 0) { p.z = 0; p.vz = 0; beep(90, 0.08, 0.12, 'triangle'); }
+  }
   G.atkCD = Math.max(0, G.atkCD - dt); G.swing -= dt;
   G.useDoor = G.useTarget === 'door' ? door : null;
 
@@ -434,7 +575,7 @@ function update(dt) {
   const turn = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) + touchMove.x;
   const fwd = Math.max(-1, Math.min(1, (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0) - touchMove.y));
   p.dir += turn * 2.4 * dt + mouseDX * 0.0028; mouseDX = 0;
-  if (Math.abs(fwd) > 0.15 && !(using && G.useTarget)) {
+  if (!p.hidden && Math.abs(fwd) > 0.15 && !(using && G.useTarget)) {
     const sp = (p.crouch ? 1.5 : 3.2) * fwd;
     moveEnt(p, Math.cos(p.dir) * sp * dt, Math.sin(p.dir) * sp * dt);
     p.step += dt * (p.crouch ? 5 : 9);
@@ -484,15 +625,41 @@ function update(dt) {
   updatePellets(dt);
   updateMonster(dt);
   if (G.over) return;
+  updateHeart(dt);
+  G.calmFx -= Math.sign(G.calmFx) * Math.min(Math.abs(G.calmFx), dt);
 
   G.log.forEach(l => l.t -= dt); G.log = G.log.filter(l => l.t > 0);
   if (G.t >= GAME_SECONDS) return end(true);
   if (G.flashT > 0) G.flashT -= dt;
 }
 
+// ---------- 숨는 오브젝트 ----------
+function enterHide(o) {
+  const p = G.p, m = G.m;
+  // 쫓기던 중에 숨는 모습을 괴물이 봤다면 → 괴물이 그 오브젝트를 열러 온다
+  const seen = m.state === 'chase' && m.tgt === p && m.stun <= 0 && dist(p, m) < 7 && los(m.x, m.y, p.x, p.y);
+  // 들어간 자리를 기억 → 나올 때 그 자리로, 괴물도 그 자리로 와서 연다
+  p.ex = p.x; p.ey = p.y; G.hideTile = [Math.floor(p.x), Math.floor(p.y)];
+  p.hidden = o; p.x = o.cx; p.y = o.cy; p.z = 0; p.vz = 0;
+  p.dir = Math.atan2(p.ey - o.cy, p.ex - o.cx);         // 틈 사이로 들어온 쪽을 바라봄
+  crouchToggle = false;
+  beep(200, 0.12, 0.15, 'square');
+  if (seen) {
+    m.state = 'open'; m.openObj = o; m.tgt = null; m.path = []; m.repath = 0;
+    flash(`😱 괴물이 ${o.name} ${HIDE_IN(o)} 숨는 걸 봤다! 빨리 나와서 도망쳐!`, 3);
+    addLog(`😈 괴물이 ${o.name} 쪽으로 온다!`);
+  } else flash(`${HIDE_ICON(o)} 숨었다!`, 1.5);
+}
+function leaveHide() {
+  const p = G.p, o = p.hidden;
+  p.hidden = null; p.x = p.ex; p.y = p.ey;
+  beep(260, 0.1, 0.12, 'square');
+}
+
 // ---------- 직업 기술 ----------
 function jobSkill() {
   if (!running || !G || G.over) return;
+  if (G.p.hidden) return flash(`${G.p.hidden.name} 안에서는 할 수 없어요`, 1.2);
   if (JOB === 'survival') return toggleFlash();
   if (JOB === 'supporter') return eatPack();
   sentinelAttack();
@@ -663,7 +830,7 @@ function pickPatrol() {
 }
 
 function canSee(m, h) {
-  if (h.dead || h.crouch) return false;                  // 웅크리면 절대 못 찾음
+  if (h.dead || h.crouch || h.hidden) return false;      // 웅크리거나 오브젝트에 숨으면 못 찾음
   const d = Math.hypot(h.x - m.x, h.y - m.y);
   if (d < DIFF.hear) return true;
   if (d > DIFF.vision) return false;
@@ -697,7 +864,7 @@ function updateMonster(dt) {
     m.state = 'chase'; m.tgt = h; m.last = [h.x, h.y]; G.seenT = 0;
   } else if (m.state === 'chase') {
     G.seenT += dt;
-    if (!m.tgt || m.tgt.crouch || m.tgt.dead || G.seenT > 1.2) {
+    if (!m.tgt || m.tgt.crouch || m.tgt.hidden || m.tgt.dead || G.seenT > 1.2) {
       m.state = 'search'; m.searchT = 6; m.repath = 0; m.tgt = null;
       m.target = m.last ? [Math.floor(m.last[0]), Math.floor(m.last[1])] : null; m.path = [];
     }
@@ -717,12 +884,21 @@ function updateMonster(dt) {
       }
       m.target = tgt; pathTo(m, tgt[0], tgt[1]); m.repath = 2;
     }
+  } else if (m.state === 'open') {
+    // 숨는 걸 본 오브젝트로 가서 연다
+    const o = m.openObj;
+    if (!m.path.length || m.repath <= 0) { pathTo(m, G.hideTile[0], G.hideTile[1]); m.repath = 1; }
+    if (objDist(m, o) < 0.8) {
+      if (p.hidden === o) return caught(`괴물이 ${HIDE_OPEN(o)}습니다…`);
+      addLog(`😈 괴물이 ${HIDE_OPEN(o)}지만 아무도 없었다!`);
+      m.state = 'search'; m.searchT = 5; m.target = null; m.path = []; m.openObj = null;
+    }
   } else if (!m.path.length) {
     const t = pickPatrol(); m.target = t; pathTo(m, t[0], t[1]);
   }
 
   // move along path — 막힌 문이 있으면 부순다
-  const sp = (m.state === 'chase' ? 3.7 : m.state === 'search' ? 2.6 : 1.9) * DIFF.mspd;
+  const sp = (m.state === 'chase' ? 3.7 : m.state === 'open' ? 3.0 : m.state === 'search' ? 2.6 : 1.9) * DIFF.mspd;
   m.bashing = -1;
   if (m.path.length) {
     let [tx, ty] = m.path[0];
@@ -756,8 +932,9 @@ function updateMonster(dt) {
 
   // 잡기 (웅크린 사람은 바로 옆이라도 못 찾음)
   for (const h of humans) {
-    if (h.crouch || dist(h, m) > 0.65) continue;
-    if (h === p) return end(false, '괴물에게 잡혔습니다…');
+    // 나: 괴물 몸에 닿으면(가까이 가면) 웅크려 있어도 잡힘 — 오브젝트에 숨었을 때만 안전
+    if (h === p) { if (!p.hidden && dist(p, m) < 0.85) return caught('괴물에게 너무 가까이 갔습니다…'); continue; }
+    if (h.crouch || h.hidden || dist(h, m) > 0.65) continue;
     h.dead = true; releaseClaims(h); h.carry = null;
     addLog(`💀 ${h.name}이(가) 괴물에게 잡혔다…`); flash(`💀 ${h.name}이(가) 잡혔다!`);
     beep(110, 0.8, 0.35, 'sawtooth');
@@ -765,10 +942,547 @@ function updateMonster(dt) {
     break;
   }
 
-  // heartbeat
+  // heartbeat (숨어 있을 땐 미니게임의 심박수에 따라 빠르기·크기가 달라짐 → updateHeart)
+  if (p.hidden) return;
   const d = dist(p, m);
   G.beat -= dt;
   if (d < 8 && G.beat <= 0) { beep(55, 0.18, 0.4); setTimeout(() => beep(50, 0.15, 0.3), 160); G.beat = 0.35 + d * 0.12; }
+}
+
+// ---------- 💓 숨 고르기 미니게임 (숨어 있을 때 괴물이 가까이 오면) ----------
+// 심박수(G.heart 0~100)가 올라가고, 움직이는 바늘이 초록 구간에 있을 때 Space/버튼을 누르면 내려간다.
+// 100이 되면 심장 소리를 들켜서 괴물이 숨은 곳을 열러 온다.
+const CALM_RANGE = 6;
+function updateHeart(dt) {
+  const p = G.p, m = G.m;
+  const d = dist(p, m);
+  const awake = m.wake <= 0 && m.stun <= 0 && m.eat <= 0;
+  G.calmOn = !!p.hidden && awake && d < CALM_RANGE && !G.over;
+  if (G.calmOn) {
+    const near = 1 - d / CALM_RANGE;                       // 0(멀리) ~ 1(바로 옆)
+    G.heart = Math.min(100, G.heart + (5 + near * 20) * dt);
+    G.needle += G.needleDir * (0.55 + near * 0.9) * dt;   // 가까울수록 바늘이 빨라짐
+    if (G.needle > 1) { G.needle = 1; G.needleDir = -1; } else if (G.needle < 0) { G.needle = 0; G.needleDir = 1; }
+    if (G.heart >= 100 && m.state !== 'open') {
+      m.state = 'open'; m.openObj = p.hidden; m.tgt = null; m.path = []; m.repath = 0;
+      flash(`💓 심장 소리를 들켰다! 괴물이 ${p.hidden.name} 쪽으로 온다! 나가서 도망쳐!`, 3);
+      addLog('😈 괴물이 심장 소리를 들었다!');
+      beep(90, 0.5, 0.35, 'sawtooth');
+    }
+  } else G.heart = Math.max(0, G.heart - 14 * dt);
+  // 심장 소리: 숨어 있을 때는 심박수가 높을수록 빠르고 크게
+  if (p.hidden) {
+    G.beat -= dt;
+    if (G.heart > 3 && G.beat <= 0) {
+      const v = 0.08 + G.heart / 100 * 0.42;
+      beep(55, 0.18, v); setTimeout(() => beep(50, 0.15, v * 0.75), 140);
+      G.beat = 60 / (70 + G.heart * 1.1);                  // 70~180 BPM
+    }
+  }
+}
+// ---------- 👁️ 숨은 곳의 무언가 (25초 넘게 숨어 있으면) ----------
+const HAUNT_AT = 25, HAUNT_GAP = 2.2, SCARE_TIME = 1.9, SCARE_DMG = 25;
+const GET_OUT = ['나가', '나가라', '당장 나가!!!'];
+function showGetOut(n) {
+  G.getOutT = 1.7; G.getOutText = GET_OUT[n - 1];
+  G.getOutX = rnd(25, 75); G.getOutY = rnd(30, 62);
+  beep(70 - n * 8, 0.6, 0.2 + n * 0.08, 'sawtooth');                 // 낮게 우는 소리
+  setTimeout(() => beep(1900 + Math.random() * 600, 0.12, 0.06 + n * 0.03, 'square'), 90);
+}
+function jumpScare() {
+  G.scareT = G.scareDur = SCARE_TIME; G.scareKind = 'ghost'; G.hideT = 0; G.hauntN = 0; G.getOutT = 0;
+  leaveHide();
+  G.hp -= SCARE_DMG;
+  scream();
+  flash(`💀 무언가가 그 안에 같이 있었다… (체력 -${SCARE_DMG})`, 3.5);
+  addLog(`💀 숨은 곳의 무언가에게 당했다! 체력 -${SCARE_DMG}`);
+  if (G.hp <= 0) { G.hp = 0; end(false, '숨은 곳 안의 무언가에게 당했습니다…'); }
+}
+
+// 소리: 지지직(계속 도는 잡음, 크기만 조절) / 비명
+let staticGain = null;
+function setStatic(v) {
+  if (!actx) return;
+  if (!staticGain) {
+    if (v <= 0) return;
+    const len = actx.sampleRate, buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = actx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 0.5;
+    staticGain = actx.createGain(); staticGain.gain.value = 0;
+    src.connect(bp); bp.connect(staticGain); staticGain.connect(actx.destination); src.start();
+  }
+  staticGain.gain.setTargetAtTime(v * 0.14 * (0.5 + Math.random()), actx.currentTime, 0.02);
+}
+function scream() {
+  if (!actx) return;
+  const t0 = actx.currentTime;
+  const out = actx.createGain();
+  out.gain.setValueAtTime(0.0001, t0); out.gain.exponentialRampToValueAtTime(0.85, t0 + 0.02); out.gain.exponentialRampToValueAtTime(0.001, t0 + 1.7);
+  const ws = actx.createWaveShaper(), curve = new Float32Array(1024);
+  for (let i = 0; i < 1024; i++) curve[i] = Math.tanh((i / 512 - 1) * 7);
+  ws.curve = curve; ws.connect(out); out.connect(actx.destination);
+  [[620, 1], [930, .7], [1480, .5], [300, .8]].forEach(([f, a]) => {
+    const o = actx.createOscillator(); o.type = 'sawtooth';
+    o.frequency.setValueAtTime(f * 0.6, t0); o.frequency.exponentialRampToValueAtTime(f * 1.7, t0 + 0.22); o.frequency.exponentialRampToValueAtTime(f * 0.45, t0 + 1.6);
+    const lfo = actx.createOscillator(), lg = actx.createGain(); lfo.frequency.value = 22 + Math.random() * 12; lg.gain.value = f * 0.09;
+    lfo.connect(lg); lg.connect(o.frequency);
+    const g = actx.createGain(); g.gain.value = a * 0.3; o.connect(g); g.connect(ws);
+    o.start(t0); lfo.start(t0); o.stop(t0 + 1.75); lfo.stop(t0 + 1.75);
+  });
+  const len = (actx.sampleRate * 1.3) | 0, buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  const n = actx.createBufferSource(), ng = actx.createGain(); n.buffer = buf; ng.gain.value = 0.55; n.connect(ng); ng.connect(ws); n.start(t0);
+  beep(42, 0.9, 0.6, 'sawtooth');                                        // 쿵
+}
+
+// 화면: 지지직 잡음
+const stCv = document.getElementById('static'), stCtx = stCv.getContext('2d');
+function drawStatic(v) {
+  stCv.style.opacity = v;
+  if (v <= 0) return;
+  const w = stCv.width, h = stCv.height, img = stCtx.createImageData(w, h), d = img.data;
+  for (let i = 0; i < d.length; i += 4) { const g = Math.random() * 255; d[i] = g; d[i + 1] = g; d[i + 2] = g; d[i + 3] = 255; }
+  stCtx.putImageData(img, 0, 0);
+  // 찢어지는 가로 줄
+  for (let k = 0; k < 2 + v * 6; k++) {
+    const y = Math.random() * h, bh = 1 + Math.random() * 6;
+    stCtx.fillStyle = Math.random() < 0.3 ? 'rgba(255,0,0,.6)' : Math.random() < 0.5 ? '#000' : '#fff';
+    stCtx.fillRect(0, y, w, bh);
+  }
+}
+
+// 화면: 점프스케어 얼굴 (직접 그림)
+const scCv = document.getElementById('scare'), scCtx = scCv.getContext('2d');
+const seeded = s => () => (s = (s * 16807) % 2147483647) / 2147483647;
+// 화면 크기가 바뀔 때만 캔버스 크기 조정 (폰에서 매 프레임 다시 만들면 느려짐)
+function fitScare() {
+  if (scCv.width !== innerWidth || scCv.height !== innerHeight) { scCv.width = innerWidth; scCv.height = innerHeight; }
+  else scCtx.setTransform(1, 0, 0, 1, 0, 0);
+  return [scCv.width, scCv.height];
+}
+function drawScare(el) {
+  const [w, h] = fitScare(), c = scCtx, S = Math.min(w, h);
+  c.fillStyle = Math.random() < 0.15 ? '#5a0000' : '#000'; c.fillRect(0, 0, w, h);
+  const lunge = Math.min(1, el / 0.12);                                   // 순식간에 덮쳐 옴
+  const zoom = 0.55 + lunge * 0.7 + el * 0.18;
+  c.save();
+  c.translate(w / 2 + (Math.random() - .5) * S * 0.06, h / 2 + S * 0.05 + (Math.random() - .5) * S * 0.06);
+  c.scale(zoom, zoom); c.rotate((Math.random() - .5) * 0.08);
+  const R = S * 0.42, rand = seeded(7);
+  // 머리카락
+  c.fillStyle = '#030303';
+  c.beginPath(); c.ellipse(0, -R * 0.2, R * 0.98, R * 1.2, 0, 0, 7); c.fill();
+  c.strokeStyle = '#000'; c.lineWidth = R * 0.03;
+  for (let i = 0; i < 26; i++) { const x = (rand() - .5) * R * 1.6; c.beginPath(); c.moveTo(x, -R * 1.1); c.quadraticCurveTo(x + (rand() - .5) * R * .5, 0, x * 1.1 + (rand() - .5) * R * .3, R * (0.6 + rand() * 0.7)); c.stroke(); }
+  // 얼굴 (창백하고 길쭉함)
+  const fg = c.createRadialGradient(0, -R * 0.25, R * 0.05, 0, 0, R * 1.05);
+  fg.addColorStop(0, '#e2dfd2'); fg.addColorStop(0.55, '#a3a38e'); fg.addColorStop(1, '#22231c');
+  c.fillStyle = fg; c.beginPath(); c.ellipse(0, 0, R * 0.7, R * 1.0, 0, 0, 7); c.fill();
+  // 핏줄·금
+  c.strokeStyle = 'rgba(90,0,20,.55)'; c.lineWidth = R * 0.007;
+  for (let i = 0; i < 18; i++) {
+    let x = (rand() - .5) * R * 1.1, y = (rand() - .5) * R * 1.6; c.beginPath(); c.moveTo(x, y);
+    for (let k = 0; k < 5; k++) { x += (rand() - .5) * R * 0.14; y += (rand() - .5) * R * 0.14; c.lineTo(x, y); } c.stroke();
+  }
+  // 눈: 텅 빈 구멍 + 작은 빛 + 피눈물
+  for (const sx of [-1, 1]) {
+    const ex = sx * R * 0.26, ey = -R * 0.25;
+    c.fillStyle = 'rgba(0,0,0,.55)'; c.beginPath(); c.ellipse(ex, ey, R * 0.23, R * 0.29, sx * 0.4, 0, 7); c.fill();
+    c.fillStyle = '#000'; c.beginPath(); c.ellipse(ex, ey, R * 0.16, R * 0.22, sx * 0.35, 0, 7); c.fill();
+    c.fillStyle = '#7a0000'; c.fillRect(ex - R * 0.025, ey + R * 0.12, R * 0.05, R * (0.45 + sx * 0.08));
+    c.beginPath(); c.arc(ex, ey + R * (0.57 + sx * 0.08), R * 0.04, 0, 7); c.fill();
+    c.save(); c.shadowColor = '#ff0000'; c.shadowBlur = R * 0.12; c.fillStyle = '#fff';
+    c.beginPath(); c.arc(ex + (Math.random() - .5) * R * 0.03, ey + R * 0.03, R * 0.028, 0, 7); c.fill(); c.restore();
+  }
+  // 입: 귀까지 찢어진 듯 크게 벌어짐
+  const mw = R * 0.34, mh = R * (0.4 + 0.05 * Math.sin(el * 70)), my = R * 0.47;
+  const mg = c.createRadialGradient(0, my, R * 0.02, 0, my, mh); mg.addColorStop(0, '#000'); mg.addColorStop(0.7, '#1a0000'); mg.addColorStop(1, '#5c0000');
+  c.fillStyle = mg; c.beginPath(); c.ellipse(0, my, mw, mh, 0, 0, 7); c.fill();
+  c.strokeStyle = '#4a0000'; c.lineWidth = R * 0.02;
+  c.beginPath(); c.moveTo(-mw, my); c.quadraticCurveTo(-R * 0.55, my - R * 0.12, -R * 0.62, my - R * 0.3); c.stroke();
+  c.beginPath(); c.moveTo(mw, my); c.quadraticCurveTo(R * 0.55, my - R * 0.12, R * 0.62, my - R * 0.3); c.stroke();
+  c.fillStyle = '#e8e2c8';
+  for (let i = -6; i <= 6; i++) {
+    const x = i * mw / 7, k = Math.sqrt(Math.max(0, 1 - (x / mw) ** 2)), tl = R * (0.08 + rand() * 0.07), tw = mw / 8;
+    const yt = my - mh * k, yb = my + mh * k;
+    c.beginPath(); c.moveTo(x - tw, yt); c.lineTo(x + tw, yt); c.lineTo(x + (rand() - .5) * tw, yt + tl * k); c.fill();
+    c.beginPath(); c.moveTo(x - tw, yb); c.lineTo(x + tw, yb); c.lineTo(x + (rand() - .5) * tw, yb - tl * k); c.fill();
+  }
+  c.fillStyle = 'rgba(110,0,0,.85)';
+  for (let i = 0; i < 7; i++) { const x = (rand() - .5) * mw * 1.6; c.fillRect(x, my + mh * 0.6, R * 0.02, R * (0.2 + rand() * 0.4)); }
+  c.restore();
+  // 붉은 테두리 + 줄무늬 + 깜빡임
+  const vg = c.createRadialGradient(w / 2, h / 2, S * 0.25, w / 2, h / 2, Math.hypot(w, h) / 2);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(120,0,0,.85)'); c.fillStyle = vg; c.fillRect(0, 0, w, h);
+  c.fillStyle = 'rgba(0,0,0,.25)'; for (let y = 0; y < h; y += 4) c.fillRect(0, y, w, 2);
+  if (Math.random() < 0.25) { c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(0, Math.random() * h, w, Math.random() * 40); }
+  if (el > SCARE_TIME - 0.35) { c.fillStyle = `rgba(0,0,0,${(el - (SCARE_TIME - 0.35)) / 0.35})`; c.fillRect(0, 0, w, h); }
+}
+
+// ---------- 😈 괴물에게 잡혔을 때 점프스케어 ----------
+function roar() {
+  if (!actx) return;
+  const t0 = actx.currentTime;
+  const out = actx.createGain();
+  out.gain.setValueAtTime(0.0001, t0); out.gain.exponentialRampToValueAtTime(1.0, t0 + 0.015);
+  out.gain.setValueAtTime(1.0, t0 + 1.6); out.gain.exponentialRampToValueAtTime(0.001, t0 + 2.5);
+  const ws = actx.createWaveShaper(), curve = new Float32Array(2048);
+  for (let i = 0; i < 2048; i++) curve[i] = Math.tanh((i / 1024 - 1) * 10);
+  ws.curve = curve; ws.connect(out); out.connect(actx.destination);
+  const osc = (type, f0, f1, f2, amp, lfoF, lfoD) => {
+    const o = actx.createOscillator(); o.type = type;
+    o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(f1, t0 + 0.18); o.frequency.exponentialRampToValueAtTime(f2, t0 + 2.4);
+    const l = actx.createOscillator(), lg = actx.createGain(); l.frequency.value = lfoF; lg.gain.value = lfoD; l.connect(lg); lg.connect(o.frequency);
+    const g = actx.createGain(); g.gain.value = amp; o.connect(g); g.connect(ws);
+    o.start(t0); l.start(t0); o.stop(t0 + 2.5); l.stop(t0 + 2.5);
+  };
+  // 깔리는 짐승 울음 (낮게 떨림)
+  osc('sawtooth', 70, 130, 45, 0.5, 31, 40);
+  osc('sawtooth', 105, 190, 60, 0.35, 27, 55);
+  // 찢어지는 비명
+  osc('sawtooth', 900, 2300, 700, 0.22, 41, 300);
+  osc('square', 1400, 3100, 900, 0.12, 37, 500);
+  // 첫 순간 귀를 찢는 불협화음
+  [466, 494, 622, 740, 988].forEach(f => {
+    const o = actx.createOscillator(), g = actx.createGain(); o.type = 'square'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.18, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.5);
+    o.connect(g); g.connect(ws); o.start(t0); o.stop(t0 + 0.5);
+  });
+  // 거친 숨/잡음
+  const len = (actx.sampleRate * 2.4) | 0, buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (0.4 + 0.6 * Math.abs(Math.sin(i / actx.sampleRate * 9)));
+  const n = actx.createBufferSource(), lp = actx.createBiquadFilter(), ng = actx.createGain();
+  lp.type = 'lowpass'; lp.frequency.value = 1800; n.buffer = buf; ng.gain.value = 0.45;
+  n.connect(lp); lp.connect(ng); ng.connect(ws); n.start(t0);
+  // 쿵! 쿵!
+  beep(38, 0.7, 0.7, 'sine'); setTimeout(() => beep(32, 0.6, 0.6, 'sine'), 520);
+}
+
+function drawMonsterScare(el) {
+  const [w, h] = fitScare(), c = scCtx, S = Math.min(w, h), dur = CATCH_TIME;
+  // 0) 순간 암전
+  if (el < 0.06) { c.fillStyle = '#000'; c.fillRect(0, 0, w, h); return; }
+  // 끝: 검게 끊김
+  if (el > dur - 0.25) { c.fillStyle = '#000'; c.fillRect(0, 0, w, h); return; }
+  c.fillStyle = (el < 0.11 || Math.random() < 0.1) ? '#b00000' : '#070000'; c.fillRect(0, 0, w, h);
+  const lunge = Math.min(1, (el - 0.06) / 0.09);                         // 0.09초 만에 얼굴 앞까지
+  const zoom = 0.45 + lunge * 0.95 + Math.max(0, el - 0.15) * 0.22 + Math.sin(el * 40) * 0.015;
+  const open = Math.min(1, (el - 0.06) / 0.3);                            // 입이 쩍 벌어짐
+  const shake = S * (el < 0.5 ? 0.07 : 0.035);
+  c.save();
+  c.translate(w / 2 + (Math.random() - .5) * shake, h * 0.52 + (Math.random() - .5) * shake);
+  c.scale(zoom, zoom); c.rotate((Math.random() - .5) * 0.07);
+  const R = S * 0.46, rand = seeded(13);
+  // 뿔 (머리 뒤로 휘어 올라감)
+  for (const sx of [-1, 1]) {
+    c.fillStyle = '#3a2b22'; c.beginPath();
+    c.moveTo(sx * R * 0.3, -R * 0.62);
+    c.bezierCurveTo(sx * R * 0.7, -R * 1.0, sx * R * 1.05, -R * 0.95, sx * R * 1.18, -R * 1.45);
+    c.bezierCurveTo(sx * R * 0.85, -R * 1.05, sx * R * 0.65, -R * 0.85, sx * R * 0.5, -R * 0.42); c.fill();
+    c.strokeStyle = 'rgba(0,0,0,.6)'; c.lineWidth = R * 0.012;
+    for (let k = 1; k < 6; k++) { const t = k / 6; c.beginPath(); c.arc(sx * R * (0.4 + t * 0.7), -R * (0.6 + t * 0.75), R * (0.09 - t * 0.05), 0, 7); c.stroke(); }
+  }
+  // 털 덮인 머리 (가시 같은 털)
+  c.fillStyle = '#1a0b0e'; c.beginPath();
+  for (let i = 0; i <= 90; i++) { const a = i / 90 * Math.PI * 2, r = R * (i % 2 ? 1.0 + rand() * 0.32 : 0.88); c.lineTo(Math.cos(a) * r * 1.0, Math.sin(a) * r * 1.08); }
+  c.fill();
+  const hg = c.createRadialGradient(0, -R * 0.15, R * 0.05, 0, 0, R);
+  hg.addColorStop(0, '#4a2228'); hg.addColorStop(0.6, '#2a1418'); hg.addColorStop(1, '#120709');
+  c.fillStyle = hg; c.beginPath(); c.ellipse(0, 0, R * 0.86, R * 0.94, 0, 0, 7); c.fill();
+  c.strokeStyle = 'rgba(0,0,0,.5)'; c.lineWidth = R * 0.01;
+  for (let i = 0; i < 70; i++) { const a = rand() * 7, r0 = R * (0.3 + rand() * 0.55); c.beginPath(); c.moveTo(Math.cos(a) * r0, Math.sin(a) * r0); c.lineTo(Math.cos(a) * (r0 + R * 0.1), Math.sin(a) * (r0 + R * 0.1)); c.stroke(); }
+  // 눈썹뼈 그림자
+  c.fillStyle = 'rgba(0,0,0,.65)'; c.beginPath(); c.ellipse(0, -R * 0.36, R * 0.62, R * 0.17, 0, 0, 7); c.fill();
+  // 빨갛게 타는 눈 (세로 동공)
+  for (const sx of [-1, 1]) {
+    const ex = sx * R * 0.32, ey = -R * 0.3;
+    c.save(); c.translate(ex, ey); c.rotate(sx * 0.32);
+    c.shadowColor = '#ff0000'; c.shadowBlur = R * 0.25;
+    const eg = c.createRadialGradient(0, 0, 0, 0, 0, R * 0.14);
+    eg.addColorStop(0, '#fff6c0'); eg.addColorStop(0.35, '#ff3a1a'); eg.addColorStop(1, '#600000');
+    c.fillStyle = eg; c.beginPath(); c.ellipse(0, 0, R * 0.15, R * 0.075, 0, 0, 7); c.fill();
+    c.shadowBlur = 0; c.fillStyle = '#000'; c.beginPath(); c.ellipse((Math.random() - .5) * R * 0.01, 0, R * 0.018, R * 0.07, 0, 0, 7); c.fill();
+    c.restore();
+  }
+  // 입: 머리 절반을 차지할 만큼 크게 벌어짐
+  const mw = R * 0.62, mh = R * (0.12 + 0.48 * open) + Math.sin(el * 55) * R * 0.015, my = R * 0.36;
+  const mg = c.createRadialGradient(0, my + mh * 0.2, R * 0.02, 0, my, mw);
+  mg.addColorStop(0, '#000'); mg.addColorStop(0.45, '#2a0000'); mg.addColorStop(0.85, '#6e0008'); mg.addColorStop(1, '#a01020');
+  c.fillStyle = mg; c.beginPath(); c.ellipse(0, my, mw, mh, 0, 0, 7); c.fill();
+  // 이빨: 바깥 큰 줄 + 안쪽 작은 줄
+  const teeth = (sc, n, len, col) => {
+    c.fillStyle = col;
+    for (let i = 0; i < n; i++) {
+      const x = (-1 + (i + 0.5) * 2 / n) * mw * sc, k = Math.sqrt(Math.max(0, 1 - (x / (mw * sc)) ** 2)), tw = mw * sc / n;
+      const yt = my - mh * sc * k, yb = my + mh * sc * k, L = R * len * (0.7 + rand() * 0.6) * (0.4 + 0.6 * k);
+      c.beginPath(); c.moveTo(x - tw, yt); c.lineTo(x + tw, yt); c.lineTo(x + (rand() - .5) * tw * 0.6, yt + L); c.fill();
+      c.beginPath(); c.moveTo(x - tw, yb); c.lineTo(x + tw, yb); c.lineTo(x + (rand() - .5) * tw * 0.6, yb - L * 0.85); c.fill();
+    }
+  };
+  teeth(0.78, 11, 0.12, '#bdb59a');
+  teeth(1.0, 13, 0.2, '#ece6cf');
+  // 침
+  c.strokeStyle = 'rgba(230,220,210,.5)'; c.lineWidth = R * 0.008;
+  for (let i = 0; i < 6; i++) { const x = (rand() - .5) * mw * 1.3, sag = R * (0.1 + rand() * 0.25) * open; c.beginPath(); c.moveTo(x, my - mh * 0.75); c.quadraticCurveTo(x + R * 0.04, my + sag, x - R * 0.02, my + mh * 0.75); c.stroke(); }
+  c.fillStyle = 'rgba(140,0,10,.9)';
+  for (let i = 0; i < 9; i++) { const x = (rand() - .5) * mw * 1.6; c.fillRect(x, my + mh * 0.8, R * 0.022, R * (0.15 + rand() * 0.5) * open); }
+  c.restore();
+  // 발톱 할퀴기 (0.45초부터) — 화면을 대각선으로 찢고 피 자국이 남음
+  if (el > 0.45) {
+    const t = Math.min(1, (el - 0.45) / 0.12);
+    for (let i = 0; i < 4; i++) {
+      const x0 = w * (0.08 + i * 0.16), y0 = -h * 0.05, x1 = w * (0.45 + i * 0.16), y1 = h * 1.05;
+      const xe = x0 + (x1 - x0) * t, ye = y0 + (y1 - y0) * t;
+      c.lineCap = 'round';
+      c.strokeStyle = '#4a0000'; c.lineWidth = S * 0.045; c.beginPath(); c.moveTo(x0, y0); c.lineTo(xe, ye); c.stroke();
+      c.strokeStyle = '#c0000c'; c.lineWidth = S * 0.028; c.beginPath(); c.moveTo(x0, y0); c.lineTo(xe, ye); c.stroke();
+      if (t < 1) { c.strokeStyle = '#fff'; c.lineWidth = S * 0.008; c.beginPath(); c.moveTo(x0 + (x1 - x0) * Math.max(0, t - 0.25), y0 + (y1 - y0) * Math.max(0, t - 0.25)); c.lineTo(xe, ye); c.stroke(); }
+      if (t >= 1) { c.fillStyle = '#8a0000'; const drip = Math.min(1, (el - 0.57) / 1.2); for (let k = 0; k < 5; k++) { const u = (k + 0.5) / 5, dx = x0 + (x1 - x0) * u, dy = y0 + (y1 - y0) * u; c.fillRect(dx - S * 0.004, dy, S * 0.008, S * 0.12 * drip * (0.5 + ((i * 7 + k * 3) % 5) / 5)); } }
+    }
+  }
+  // 화면 찢김(가로로 밀림) + 붉은 테두리 + 줄무늬 + 번쩍임
+  for (let k = 0; k < 4; k++) { const y = Math.random() * h, bh = 4 + Math.random() * 30; c.drawImage(scCv, 0, y, w, bh, (Math.random() - .5) * S * 0.12, y, w, bh); }
+  const vg = c.createRadialGradient(w / 2, h / 2, S * 0.2, w / 2, h / 2, Math.hypot(w, h) / 2);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(140,0,0,.9)'); c.fillStyle = vg; c.fillRect(0, 0, w, h);
+  c.fillStyle = 'rgba(0,0,0,.22)'; for (let y = 0; y < h; y += 4) c.fillRect(0, y, w, 2);
+  if (el < 0.16 || Math.random() < 0.08) { c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(0, 0, w, h); }
+}
+
+// ---------- 🍖 먹히는 엔딩 ----------
+// 시간표 (초): 0~1.6 끌려감 · 1.6~3.4 들어 올림 · 3.4~3.75 떨어뜨림 · 3.75 콱! · 4.4~6.2 씹기 · 6.2~ 암전 + 글씨
+const EAT = { lift: 1.6, open: 2.8, drop: 3.4, chomp: 3.75, chew: [4.6, 5.2, 5.8], gulp: 6.25, fade: 6.4 };
+function noiseHit(dur, vol, f = 1200, type = 'lowpass') {
+  if (!actx) return;
+  const len = Math.max(1, (actx.sampleRate * dur) | 0), buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+  const s = actx.createBufferSource(), fl = actx.createBiquadFilter(), g = actx.createGain();
+  s.buffer = buf; fl.type = type; fl.frequency.value = f; g.gain.value = vol;
+  s.connect(fl); fl.connect(g); g.connect(actx.destination); s.start();
+}
+function crunch(v = 1) {
+  noiseHit(0.25, 0.7 * v, 900); beep(48, 0.35, 0.55 * v, 'sine');
+  for (let k = 0; k < 4; k++) setTimeout(() => noiseHit(0.03, 0.5 * v, 3500, 'highpass'), 30 + k * 45 + Math.random() * 30); // 오도독
+}
+function eatenSounds(g) {
+  const at = (t, fn) => setTimeout(() => { if (G === g && !g.skipped) fn(); }, t * 1000);
+  // 끌려가는 소리
+  for (let i = 0; i < 6; i++) at(i * 0.26, () => { noiseHit(0.22, 0.35, 500); beep(60 + Math.random() * 20, 0.15, 0.25, 'triangle'); });
+  // 낮은 으르렁
+  at(EAT.lift, () => { beep(55, 1.3, 0.35, 'sawtooth'); beep(82, 1.1, 0.2, 'sawtooth'); });
+  at(EAT.open, () => { beep(140, 0.6, 0.25, 'sawtooth'); noiseHit(0.6, 0.3, 700); });           // 입 벌리며 숨
+  at(EAT.chomp, () => { crunch(1.2); beep(35, 0.8, 0.7, 'sine'); });                               // 콱!
+  EAT.chew.forEach(t => at(t, () => crunch(0.8)));                                                  // 우적우적
+  at(EAT.gulp, () => { beep(180, 0.15, 0.3, 'sine'); setTimeout(() => beep(70, 0.5, 0.45, 'sine'), 120); }); // 꿀꺽
+  at(EAT.fade + 0.3, () => { beep(41, 2.2, 0.35, 'sawtooth'); beep(43.5, 2.2, 0.3, 'sawtooth'); });  // 무거운 울림
+}
+
+// 괴물 실루엣: (x, y)=발 위치, s=키. arm=팔 각도(0 아래 ~ π 위), jaw=입 벌림 0~1
+function monsterSil(c, x, y, s, arm, jaw, t) {
+  const sil = '#050102';
+  c.fillStyle = sil; c.strokeStyle = sil; c.lineCap = 'round';
+  // 다리
+  c.lineWidth = s * 0.09;
+  c.beginPath(); c.moveTo(x - s * 0.08, y - s * 0.4); c.lineTo(x - s * 0.12, y); c.stroke();
+  c.beginPath(); c.moveTo(x + s * 0.1, y - s * 0.4); c.lineTo(x + s * 0.13, y); c.stroke();
+  // 털 덮인 몸 (가시 윤곽)
+  const bx = x, by = y - s * 0.62, rx = s * 0.28, ry = s * 0.38, rand = seeded(5);
+  c.beginPath();
+  for (let i = 0; i <= 96; i++) { const a = i / 96 * Math.PI * 2, k = i % 2 ? 1.06 + rand() * 0.1 : 0.98; c.lineTo(bx + Math.cos(a) * rx * k, by + Math.sin(a) * ry * k + Math.sin(t * 3) * s * 0.004); }
+  c.fill();
+  // 뒤쪽 팔 (늘어짐)
+  c.lineWidth = s * 0.06;
+  c.beginPath(); c.moveTo(x + s * 0.18, y - s * 0.8); c.lineTo(x + s * 0.3, y - s * 0.35); c.stroke();
+  // 머리 + 뿔
+  const hx = x - s * 0.04, hy = y - s * 1.05, hr = s * 0.15;
+  for (const sx of [-1, 1]) {
+    c.beginPath(); c.moveTo(hx + sx * hr * 0.4, hy - hr * 0.6);
+    c.quadraticCurveTo(hx + sx * hr * 1.6, hy - hr * 1.2, hx + sx * hr * 1.5, hy - hr * 2.4);
+    c.quadraticCurveTo(hx + sx * hr * 1.1, hy - hr * 1.3, hx + sx * hr * 0.1, hy - hr * 0.5); c.fill();
+  }
+  // 윗머리
+  c.beginPath(); c.arc(hx, hy, hr, Math.PI * 0.95, Math.PI * 2.2); c.fill();
+  // 아래턱 (jaw만큼 벌어짐) — 입 안은 붉게 빛남
+  const ja = jaw * 0.85;
+  if (jaw > 0.05) {
+    const mg = c.createRadialGradient(hx - hr * 0.5, hy + hr * 0.2, 1, hx - hr * 0.5, hy + hr * 0.2, hr * 1.2);
+    mg.addColorStop(0, '#ff3020'); mg.addColorStop(0.5, '#8a0000'); mg.addColorStop(1, 'rgba(60,0,0,0)');
+    c.fillStyle = mg; c.beginPath(); c.ellipse(hx - hr * 0.45, hy + hr * 0.25 + jaw * hr * 0.4, hr * 0.75, hr * (0.2 + jaw * 0.6), 0, 0, 7); c.fill();
+    // 이빨
+    c.fillStyle = '#d8d0b8';
+    for (let i = 0; i < 6; i++) { const tx = hx - hr * 1.0 + i * hr * 0.2; c.beginPath(); c.moveTo(tx, hy + hr * 0.15); c.lineTo(tx + hr * 0.12, hy + hr * 0.15); c.lineTo(tx + hr * 0.06, hy + hr * 0.45); c.fill(); }
+    c.fillStyle = sil;
+  }
+  c.save(); c.translate(hx + hr * 0.6, hy + hr * 0.1); c.rotate(-ja);
+  c.beginPath(); c.moveTo(0, 0); c.lineTo(-hr * 1.75, hr * 0.05); c.lineTo(-hr * 1.6, hr * 0.45); c.lineTo(0, hr * 0.7); c.fill();
+  if (jaw > 0.05) { c.fillStyle = '#d8d0b8'; for (let i = 0; i < 5; i++) { const tx = -hr * 1.5 + i * hr * 0.25; c.beginPath(); c.moveTo(tx, hr * 0.05); c.lineTo(tx + hr * 0.12, hr * 0.05); c.lineTo(tx + hr * 0.06, -hr * 0.22); c.fill(); } c.fillStyle = sil; }
+  c.restore();
+  // 빨간 눈
+  c.save(); c.shadowColor = '#ff0000'; c.shadowBlur = s * 0.05; c.fillStyle = '#ff3a2a';
+  for (const ex of [-0.55, -0.15]) { c.beginPath(); c.ellipse(hx + ex * hr, hy - hr * 0.3, hr * 0.13, hr * 0.07, -0.2, 0, 7); c.fill(); }
+  c.restore();
+  // 앞쪽 팔 (사람을 들어 올림) → 손 위치 반환
+  const shx = x - s * 0.2, shy = y - s * 0.85, L = s * 0.55;
+  const handX = shx - Math.sin(arm) * L * 0.95, handY = shy + Math.cos(arm) * L;
+  const elx = shx - Math.sin(arm * 0.6) * L * 0.55 - s * 0.05, ely = shy + Math.cos(arm * 0.6) * L * 0.5;
+  c.fillStyle = sil; c.strokeStyle = sil; c.lineWidth = s * 0.065;
+  c.beginPath(); c.moveTo(shx, shy); c.lineTo(elx, ely); c.lineTo(handX, handY); c.stroke();
+  c.lineWidth = s * 0.018;
+  for (let k = -1; k <= 1; k++) { c.beginPath(); c.moveTo(handX, handY); c.lineTo(handX - s * 0.05 + k * s * 0.02, handY + s * 0.05 * Math.cos(arm) - s * 0.02); c.stroke(); }
+  return { handX, handY, mouthX: hx - hr * 0.55, mouthY: hy + hr * 0.4 };
+}
+// 사람 실루엣 (거꾸로 매달림): (x,y)=발목, h=키, sw=흔들림 각도
+function humanSil(c, x, y, h, sw, kick) {
+  c.save(); c.translate(x, y); c.rotate(sw);
+  c.shadowColor = '#ff5030'; c.shadowBlur = h * 0.12;                      // 달빛에 비친 붉은 테두리
+  c.strokeStyle = '#1e0c0e'; c.fillStyle = '#1e0c0e'; c.lineCap = 'round'; c.lineWidth = h * 0.09;
+  const hipY = h * 0.45, shY = h * 0.78;
+  c.beginPath(); c.moveTo(-h * 0.03, 0); c.lineTo(0, hipY); c.stroke();
+  c.beginPath(); c.moveTo(h * 0.03 + Math.sin(kick) * h * 0.12, h * 0.05); c.lineTo(0, hipY); c.stroke();  // 버둥대는 다리
+  c.lineWidth = h * 0.13; c.beginPath(); c.moveTo(0, hipY); c.lineTo(0, shY); c.stroke();
+  c.lineWidth = h * 0.06;
+  c.beginPath(); c.moveTo(0, shY - h * 0.04); c.lineTo(-h * 0.14 + Math.sin(kick * 1.3) * h * 0.06, shY + h * 0.22); c.stroke();
+  c.beginPath(); c.moveTo(0, shY - h * 0.04); c.lineTo(h * 0.14 + Math.cos(kick) * h * 0.06, shY + h * 0.2); c.stroke();
+  c.beginPath(); c.arc(0, shY + h * 0.12, h * 0.085, 0, 7); c.fill();
+  c.restore();
+}
+
+function drawEaten(e) {
+  const [w, h] = fitScare(), c = scCtx, S = Math.min(w, h);
+  c.globalAlpha = 1; c.shadowBlur = 0;
+  G.eatShake = 0;
+  // ── 1) 끌려감 (1인칭, 바닥이 휙휙 지나감)
+  if (e < EAT.lift) {
+    c.fillStyle = '#000'; c.fillRect(0, 0, w, h);
+    c.save(); c.translate(w / 2, h / 2); c.rotate(Math.sin(e * 9) * 0.12 + 0.25); c.translate(-w / 2, -h / 2 + Math.sin(e * 23) * S * 0.02);
+    const vy = h * 0.3;
+    c.fillStyle = '#2a1a10'; c.beginPath(); c.moveTo(w * 0.45, vy); c.lineTo(w * 0.55, vy); c.lineTo(w * 1.6, h * 1.2); c.lineTo(-w * 0.6, h * 1.2); c.fill();
+    c.strokeStyle = 'rgba(0,0,0,.6)'; c.lineWidth = 2;
+    for (let i = -8; i <= 8; i++) { c.beginPath(); c.moveTo(w / 2 + i * w * 0.012, vy); c.lineTo(w / 2 + i * w * 0.2, h * 1.2); c.stroke(); }
+    for (let k = 0; k < 14; k++) {                                                  // 앞으로 흘러가는 판자 이음새
+      const z = ((k / 14 + e * 1.6) % 1), y = vy + (h * 0.9) * z * z;
+      c.globalAlpha = z; c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); c.globalAlpha = 1;
+    }
+    for (let k = 0; k < 4; k++) {                                                   // 바닥에 남는 손톱 자국 (피)
+      c.strokeStyle = 'rgba(120,0,0,.8)'; c.lineWidth = S * 0.008;
+      const x = w * (0.38 + k * 0.08); c.beginPath(); c.moveTo(x, h); c.lineTo(x + (w / 2 - x) * 0.6, vy + h * 0.25); c.stroke();
+    }
+    c.restore();
+    // 위에서 발목을 움켜쥔 거대한 발톱 그림자
+    c.fillStyle = '#050102';
+    for (let k = 0; k < 4; k++) { const x = w * (0.3 + k * 0.13) + Math.sin(e * 20 + k) * 6; c.beginPath(); c.moveTo(x - S * 0.05, -10); c.quadraticCurveTo(x + S * 0.04, h * 0.1, x - S * 0.01, h * (0.16 + (k % 2) * 0.04)); c.lineTo(x + S * 0.04, -10); c.fill(); }
+    const vg = c.createRadialGradient(w / 2, h / 2, S * 0.1, w / 2, h / 2, Math.hypot(w, h) / 2);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(90,0,0,.95)'); c.fillStyle = vg; c.fillRect(0, 0, w, h);
+    if (e > EAT.lift - 0.15) { c.fillStyle = '#000'; c.fillRect(0, 0, w, h); }
+    G.eatShake = 1;
+    return;
+  }
+  // ── 2~4) 붉은 달빛 창문 앞 실루엣 장면
+  const t = e;
+  let zoom = 1, fx = 0, fy = 0;
+  if (t > EAT.chomp) { zoom = 1 + Math.min(1, (t - EAT.chomp) / 0.6) * 0.55; }   // 콱! 이후 머리 쪽으로 다가감
+  const bg = c.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#2a0204'); bg.addColorStop(1, '#0a0001');
+  c.fillStyle = bg; c.fillRect(0, 0, w, h);
+  const gx = w * 0.52, gy = h * (h > w ? 0.8 : 0.93), s = Math.min(w * 0.72, h * 0.5);   // 괴물 발 위치·키 (세로 화면에선 더 크게)
+  c.save();
+  // 씹을 때 흔들림
+  let chewK = 0;
+  for (const ct of [EAT.chomp, ...EAT.chew]) { const d = t - ct; if (d >= 0 && d < 0.35) chewK = Math.max(chewK, 1 - d / 0.35); }
+  G.eatShake = chewK;
+  fx = (Math.random() - .5) * S * 0.05 * chewK; fy = (Math.random() - .5) * S * 0.05 * chewK;
+  const focusX = gx - s * 0.1, focusY = gy - s * 1.05;
+  c.translate(focusX + fx, focusY + fy); c.scale(zoom, zoom); c.translate(-focusX, -focusY);   // 머리를 중심으로 확대
+  // 창문 + 붉은 달
+  const ww = s * 0.95, wh = s * 1.2, wx = Math.min(w - ww / 2 - 10, gx + s * 0.25), wy = Math.max(10, gy - s * 1.75);
+  c.fillStyle = '#4a0a0c'; c.fillRect(wx - ww / 2, wy, ww, wh);
+  const moon = c.createRadialGradient(wx + ww * 0.12, wy + wh * 0.32, 1, wx + ww * 0.12, wy + wh * 0.32, ww * 0.42);
+  moon.addColorStop(0, '#ffb39a'); moon.addColorStop(0.35, '#e0402a'); moon.addColorStop(1, 'rgba(120,0,0,0)');
+  c.fillStyle = moon; c.fillRect(wx - ww / 2, wy, ww, wh);
+  c.fillStyle = '#050102'; c.fillRect(wx - ww / 2 - 8, wy - 8, ww + 16, 10); c.fillRect(wx - ww / 2 - 8, wy + wh - 2, ww + 16, 10);
+  c.fillRect(wx - 4, wy, 8, wh); c.fillRect(wx - ww / 2, wy + wh / 2 - 4, ww, 8);
+  c.fillRect(wx - ww / 2 - 8, wy, 10, wh); c.fillRect(wx + ww / 2 - 2, wy, 10, wh);
+  // 바닥
+  c.fillStyle = '#080102'; c.fillRect(-w, gy, w * 3, h);
+  // 팔 각도 / 입 벌림
+  const lift = Math.min(1, Math.max(0, (t - EAT.lift) / (EAT.open - EAT.lift)));
+  const arm = (1 - Math.pow(1 - lift, 3)) * 2.55;
+  let jaw = 0;
+  if (t > EAT.open && t < EAT.chomp) jaw = Math.min(1, (t - EAT.open) / 0.5);
+  for (const ct of EAT.chew) { const d = t - ct; if (d > -0.25 && d < 0.05) jaw = Math.max(jaw, 0.45 * (1 - Math.abs(d + 0.1) / 0.15)); }
+  const P = monsterSil(c, gx, gy, s, arm, Math.max(0, jaw), t);
+  // 사람: 매달림 → 떨어짐 → 사라짐
+  const hh = s * 0.32;
+  if (t < EAT.drop) {
+    const sw = Math.sin(t * 4.2) * (0.35 - lift * 0.15);
+    humanSil(c, P.handX, P.handY, hh, sw, t * 14);
+  } else if (t < EAT.chomp) {
+    const k = (t - EAT.drop) / (EAT.chomp - EAT.drop);
+    const x = P.handX + (P.mouthX - P.handX) * k, y = P.handY + (P.mouthY - P.handY) * k * k;
+    c.save(); c.translate(x, y); c.scale(1 - k * 0.5, 1 - k * 0.5); humanSil(c, 0, 0, hh, Math.sin(t * 10) * 0.4, t * 20); c.restore();
+  }
+  // 콱! 피 튀김 (실루엣 수준)
+  if (t >= EAT.chomp) {
+    const d = t - EAT.chomp, rnd2 = seeded(99);
+    c.fillStyle = '#9a0008';
+    for (let i = 0; i < 40; i++) {
+      const vx = (rnd2() - .7) * s * 1.1, vy = -rnd2() * s * 0.9, r = s * (0.004 + rnd2() * 0.012);
+      const px = P.mouthX + vx * d, py = P.mouthY + vy * d + s * 2.2 * d * d;
+      if (py < gy) { c.beginPath(); c.arc(px, py, r, 0, 7); c.fill(); }
+    }
+    // 바닥에 고이는 피
+    c.beginPath(); c.ellipse(P.mouthX + s * 0.05, gy + 2, s * 0.25 * Math.min(1, d / 1.5), s * 0.03 * Math.min(1, d / 1.5), 0, 0, 7); c.fill();
+    // 턱에서 떨어지는 핏방울
+    for (let i = 0; i < 3; i++) { const dd = (d * 1.3 + i * 0.37) % 1.1; c.fillRect(P.mouthX - s * 0.03 + i * s * 0.03, P.mouthY + s * 0.06 + dd * (gy - P.mouthY), s * 0.006, s * 0.025); }
+  }
+  c.restore();
+  // 콱! 순간 화면 번쩍
+  if (t > EAT.chomp && t < EAT.chomp + 0.12) { c.fillStyle = 'rgba(200,0,0,.75)'; c.fillRect(0, 0, w, h); }
+  // 화면을 타고 흘러내리는 피 (콱! 이후)
+  if (t > EAT.chomp) {
+    const d = t - EAT.chomp, rnd3 = seeded(42);
+    c.fillStyle = 'rgba(120,0,6,.92)';
+    for (let i = 0; i < 18; i++) {
+      const x = rnd3() * w, wd = S * (0.008 + rnd3() * 0.02), sp = 0.2 + rnd3() * 0.5, L = Math.min(h * 1.1, h * sp * d * d * 0.9 + h * 0.02);
+      c.fillRect(x - wd / 2, 0, wd, L); c.beginPath(); c.arc(x, L, wd * 0.75, 0, 7); c.fill();
+    }
+    c.fillStyle = 'rgba(100,0,4,.85)'; c.fillRect(0, 0, w, S * 0.03);
+  }
+  // 테두리 / 줄무늬
+  const vg = c.createRadialGradient(w / 2, h / 2, S * 0.25, w / 2, h / 2, Math.hypot(w, h) / 2);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.9)'); c.fillStyle = vg; c.fillRect(0, 0, w, h);
+  c.fillStyle = 'rgba(0,0,0,.18)'; for (let y = 0; y < h; y += 4) c.fillRect(0, y, w, 2);
+  // ── 5) 암전 + 글씨 (빨간 눈만 남았다가 꺼짐)
+  if (t > EAT.fade) {
+    const k = Math.min(1, (t - EAT.fade) / 0.6);
+    c.fillStyle = `rgba(0,0,0,${k})`; c.fillRect(0, 0, w, h);
+    if (k >= 1 && t < EATEN_TIME - 0.5) {
+      c.save(); c.shadowColor = '#f00'; c.shadowBlur = 20; c.fillStyle = '#ff2a1a';
+      for (const sx of [-1, 1]) { c.beginPath(); c.ellipse(w / 2 + sx * S * 0.07, h * 0.3, S * 0.03, S * 0.012, -sx * 0.25, 0, 7); c.fill(); }
+      c.restore();
+    }
+    const tk = Math.min(1, Math.max(0, (t - EAT.fade - 0.5) / 0.6));
+    if (tk > 0) {
+      c.globalAlpha = tk * (Math.random() < 0.08 ? 0.3 : 1);
+      c.font = `900 ${Math.round(S * 0.075)}px "Malgun Gothic",sans-serif`; c.textAlign = 'center';
+      c.fillStyle = '#b00010'; c.fillText('당신은 괴물에게 먹혔습니다…', w / 2 + (Math.random() - .5) * 4, h * 0.55);
+      c.font = `${Math.round(S * 0.028)}px "Malgun Gothic",sans-serif`; c.fillStyle = '#777';
+      c.fillText('(클릭하거나 아무 키나 누르면 넘어가요)', w / 2, h * 0.55 + S * 0.08);
+      c.globalAlpha = 1; c.textAlign = 'left';
+    }
+  }
+}
+
+function calmPress() {
+  if (!running || !G || G.over || !G.calmOn) return;
+  const lo = G.zone - G.zoneW / 2, hi = G.zone + G.zoneW / 2;
+  if (G.needle >= lo && G.needle <= hi) {
+    G.heart = Math.max(0, G.heart - 22);
+    G.zone = rnd(0.2, 0.8);                                // 성공하면 초록 구간이 다른 곳으로
+    G.calmFx = 0.25; beep(330, 0.08, 0.08, 'triangle');
+  } else {
+    G.heart = Math.min(100, G.heart + 10);
+    G.calmFx = -0.25; beep(140, 0.1, 0.12, 'square');
+  }
 }
 
 function end(win, reason) {
@@ -779,9 +1493,25 @@ function end(win, reason) {
   $('endTitle').style.color = win ? '#7dd37d' : 'var(--red)';
   $('endText').innerHTML = (win ? '새벽 6시, 해가 떴습니다. 괴물이 사라졌어요.' : reason + ' (' + clockText() + ')')
     + `<br>살아남은 친구: <b>${alive} / 10</b>명 · 막힌 문 ${G.doors.filter(d => d.hp > 0).length}개`;
-  $('endScreen').classList.remove('hidden');
-  if (!win) beep(70, 1.2, 0.4, 'sawtooth');
+  // 점프스케어 중이면 끝난 뒤에 게임 오버 화면
+  // (끝나는 순간은 render()에서 G.scareT가 0이 될 때 처리)
+  if (!win && G.scareT > 0) G.endPending = true;
+  else { $('endScreen').classList.remove('hidden'); if (!win) beep(70, 1.2, 0.4, 'sawtooth'); }
 }
+// 괴물에게 잡힘 → 괴물 점프스케어 → 먹히는 엔딩 → 게임 오버
+const CATCH_TIME = 2.6, EATEN_TIME = 7.6;
+function caught(reason) {
+  G.scareT = G.scareDur = CATCH_TIME + EATEN_TIME; G.scareKind = 'monster'; G.getOutT = 0;
+  roar();
+  const g = G; setTimeout(() => { if (G === g && G.scareT > 0) eatenSounds(g); }, CATCH_TIME * 1000);
+  return end(false, reason === '괴물에게 너무 가까이 갔습니다…' ? '괴물에게 잡아먹혔습니다…' : reason + ' 그리고 잡아먹혔습니다…');
+}
+// 엔딩 건너뛰기 (클릭 / 아무 키)
+function skipEnding() {
+  if (G && G.over && G.scareKind === 'monster' && G.scareT > 0 && G.scareDur - G.scareT > CATCH_TIME + 0.3) { G.scareT = 0; G.skipped = true; }
+}
+addEventListener('keydown', skipEnding);
+addEventListener('pointerdown', skipEnding);
 
 function clockText() {
   const mins = Math.floor(G.t / GAME_SECONDS * 360);
@@ -793,7 +1523,7 @@ function clockText() {
 // 같은 글자 = 하나의 가구
 const FURN_RECT = {};
 for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-  const ch = MAP[y][x]; if (ch === '#' || ch === '.') continue;
+  const ch = MAP[y][x]; if (ch === '#' || ch === '.' || ch === 'K') continue;
   const r = FURN_RECT[ch] || (FURN_RECT[ch] = { x0:x, y0:y, x1:x, y1:y });
   r.x0 = Math.min(r.x0, x); r.y0 = Math.min(r.y0, y); r.x1 = Math.max(r.x1, x); r.y1 = Math.max(r.y1, y);
 }
@@ -876,15 +1606,19 @@ function buildBackground() {
 function drawFurniture(c) {
   const R = ch => { const r = FURN_RECT[ch]; return [r.x0 * T, r.y0 * T, (r.x1 - r.x0 + 1) * T, (r.y1 - r.y0 + 1) * T]; };
   let x, y, w, h;
-  // 침대
-  [x, y, w, h] = R('b');
-  c.fillStyle = 'rgba(0,0,0,.2)'; rr(c, x + 4, y + 6, w, h, 6); c.fill();
-  c.fillStyle = '#7a5235'; rr(c, x + 1, y + 1, w - 2, h - 2, 6); c.fill();
-  c.fillStyle = '#5c3b25'; rr(c, x + 1, y + 1, 9, h - 2, 4); c.fill();          // 헤드보드
-  c.fillStyle = '#fafafa'; rr(c, x + 10, y + 5, w - 15, h - 10, 4); c.fill();
-  c.fillStyle = '#ffffff'; rr(c, x + 13, y + 9, 18, h / 2 - 12, 5); c.fill(); rr(c, x + 13, y + h / 2 + 3, 18, h / 2 - 12, 5); c.fill(); // 베개
-  c.fillStyle = '#5b8bd6'; rr(c, x + 36, y + 4, w - 41, h - 8, 4); c.fill();      // 이불
-  c.fillStyle = '#4a74b8'; c.fillRect(x + 36, y + 4, 6, h - 8);
+  // 침대 (침실 + 서재)
+  const bed2D = (x, y, w, h, blanket = '#5b8bd6') => {
+    c.fillStyle = 'rgba(0,0,0,.2)'; rr(c, x + 4, y + 6, w, h, 6); c.fill();
+    c.fillStyle = '#7a5235'; rr(c, x + 1, y + 1, w - 2, h - 2, 6); c.fill();
+    c.fillStyle = '#5c3b25'; rr(c, x + 1, y + 1, 9, h - 2, 4); c.fill();          // 헤드보드
+    c.fillStyle = '#fafafa'; rr(c, x + 10, y + 5, w - 15, h - 10, 4); c.fill();
+    c.fillStyle = '#ffffff'; rr(c, x + 13, y + 9, 18, h / 2 - 12, 5); c.fill(); rr(c, x + 13, y + h / 2 + 3, 18, h / 2 - 12, 5); c.fill(); // 베개
+    c.fillStyle = blanket; rr(c, x + 36, y + 4, w - 41, h - 8, 4); c.fill();       // 이불
+    c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(x + 36, y + 4, 6, h - 8);
+    c.font = '13px sans-serif'; c.fillText('🛏️', x + w - 20, y + h - 6);            // 밑에 숨을 수 있다는 표시
+  };
+  bed2D(...R('b'));
+  for (const o of HIDE_OBJS) if (o.kind === 'bed' && !o.existing) bed2D(o.x * T, o.y * T, o.w * T, o.h * T, o.blanket);
   // 소파
   [x, y, w, h] = R('c');
   c.fillStyle = 'rgba(0,0,0,.2)'; rr(c, x + 3, y + 5, w, h, 6); c.fill();
@@ -947,6 +1681,16 @@ function drawFurniture(c) {
     c.fillStyle = '#a77b40'; c.fillRect(bx, by, bw, 3);
     c.fillStyle = '#e8d3a1'; c.fillRect(bx + bw / 2 - 2, by, 4, bh);
     c.strokeStyle = '#8a6330'; c.lineWidth = 1; c.strokeRect(bx + .5, by + .5, bw - 1, bh - 1);
+  }
+  // 숨는 오브젝트 (옷장·수납장·큰 상자)
+  for (const o of HIDE_OBJS) {
+    if (o.kind === 'bed') continue;                // 침대는 위에서 그림
+    const px = o.x * T, py = o.y * T;
+    c.fillStyle = 'rgba(0,0,0,.25)'; rr(c, px + 3, py + 4, T - 2, T - 2, 4); c.fill();
+    c.fillStyle = o.kind === 'crate' ? '#b98a4e' : o.kind === 'cabinet' ? '#8a6a4a' : '#6b4428';
+    rr(c, px + 1, py + 1, T - 2, T - 2, 4); c.fill();
+    c.strokeStyle = 'rgba(255,220,150,.55)'; c.lineWidth = 1.5; c.stroke();
+    c.font = '16px sans-serif'; c.textAlign = 'center'; c.fillText(o.kind === 'crate' ? '📦' : '🚪', px + T / 2, py + T / 2 + 6); c.textAlign = 'left';
   }
 }
 
@@ -1211,13 +1955,20 @@ function buildHouse() {
 function buildFurniture() {
   const R = ch => { const r = FURN_RECT[ch]; return { x: r.x0, z: r.y0, w: r.x1 - r.x0 + 1, d: r.y1 - r.y0 + 1, cx: (r.x0 + r.x1 + 1) / 2, cz: (r.y0 + r.y1 + 1) / 2 }; };
   let r;
-  // 침대
-  r = R('b');
-  box(r.w - .1, .3, r.d - .1, M(0x7a5235), r.cx, .15, r.cz);
-  box(.12, .75, r.d - .1, M(0x5c3b25), r.x + .1, .375, r.cz);
-  box(r.w - .3, .14, r.d - .25, M(0xf4f4f4), r.cx + .05, .37, r.cz);
-  box(.45, .1, .7, M(0xffffff), r.x + .5, .48, r.cz - .45); box(.45, .1, .7, M(0xffffff), r.x + .5, .48, r.cz + .45);
-  box(r.w * .62, .1, r.d - .2, M(0x5b8bd6), r.x + r.w * .62, .47, r.cz);
+  // 침대 — 다리 위에 떠 있어서 밑에 숨을 공간이 있음 (침실 + 서재)
+  const bed3D = (r, blanket = 0x5b8bd6) => {
+    box(r.w - .1, .1, r.d - .1, M(0x7a5235), r.cx, .3, r.cz);                     // 침대 판 (바닥에서 .25~.35)
+    for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]])
+      box(.08, .25, .08, M(0x5c3b25), r.cx + dx * (r.w / 2 - .12), .125, r.cz + dz * (r.d / 2 - .12)); // 다리
+    box(r.w - .1, .1, .03, M(0x4a2f1c), r.cx, .2, r.z + r.d - .07);              // 옆 가림판 (살짝)
+    box(.12, .75, r.d - .1, M(0x5c3b25), r.x + .1, .375, r.cz);                   // 헤드보드
+    box(r.w - .3, .14, r.d - .25, M(0xf4f4f4), r.cx + .05, .42, r.cz);           // 매트리스
+    box(.45, .1, .7, M(0xffffff), r.x + .5, .53, r.cz - .45); box(.45, .1, .7, M(0xffffff), r.x + .5, .53, r.cz + .45);
+    box(r.w * .62, .1, r.d - .2, M(blanket), r.x + r.w * .62, .52, r.cz);         // 이불
+  };
+  bed3D(R('b'));
+  for (const o of HIDE_OBJS) if (o.kind === 'bed' && !o.existing)
+    bed3D({ x: o.x, z: o.y, w: o.w, d: o.h, cx: o.cx, cz: o.cy }, new THREE.Color(o.blanket).getHex());
   // 소파 + TV
   r = R('c');
   box(r.w - .1, .38, r.d - .1, M(0x6a8db1), r.cx, .19, r.cz);
@@ -1276,6 +2027,26 @@ function buildFurniture() {
   }
   // 천장 전등 (꺼진 전등)
   for (const [lx, ly] of [[5,4],[14.5,4.5],[24,4],[15,9.8],[5,15],[15.5,15],[25,15]]) sph(.18, M(0xdddddd), lx, WALL_H - .05, ly, null, 1, .4, 1);
+  // 숨는 오브젝트 — 앞면(문)이 fx,fy 쪽을 바라보게
+  for (const o of HIDE_OBJS) {
+    if (o.kind === 'bed') continue;                // 침대는 위에서 만듦
+    const g = new THREE.Group(); g.position.set(o.x + .5, 0, o.y + .5);
+    g.rotation.y = Math.atan2(o.fx - o.x, o.fy - o.y); scene.add(g);
+    if (o.kind === 'crate') {
+      box(.92, .85, .92, M(0xc99a5b), 0, .425, 0, g);
+      box(.94, .1, .14, M(0xe8d3a1), 0, .86, 0, g);                       // 테이프
+      box(.6, .03, .44, M(0xb98a4e), 0, .9, .26, g).rotation.x = -0.5;     // 열린 덮개
+      box(.5, .3, .02, M(0x3a2a18), 0, .45, .47, g);                       // 손잡이 구멍
+    } else {
+      const tall = o.kind === 'wardrobe', h = tall ? 1.5 : 1.05;
+      box(.94, h, .7, M(tall ? 0x6b4428 : 0x8a6a4a), 0, h / 2, -.1, g);   // 몸통
+      for (const sx of [-.23, .23]) {
+        box(.43, h - .12, .03, M(tall ? 0x7d5332 : 0x9c7a56), sx, h / 2, .26, g);   // 문짝
+        for (let k = 0; k < (tall ? 6 : 4); k++) box(.33, .025, .02, M(0x3a2414), sx, .3 + k * .18, .285, g); // 틈(루버)
+        box(.03, .14, .03, M(0xd8b060), sx > 0 ? .04 : -.04, h * .55, .29, g);      // 손잡이
+      }
+    }
+  }
 }
 
 // --- 막힌 문 (판자) ---
@@ -1429,10 +2200,11 @@ function sync3D() {
 function render3D(dt) {
   sync3D();
   const p = G.p;
-  R3.eye += ((p.crouch ? EYE_CROUCH : EYE) - R3.eye) * Math.min(1, dt * 10);
-  const bob = p.moving ? Math.sin(p.step * 1.2) * (p.crouch ? .015 : .035) : 0;
-  cam3.position.set(p.x, R3.eye + bob, p.y);
-  cam3.lookAt(p.x + Math.cos(p.dir), R3.eye + bob, p.y + Math.sin(p.dir));
+  R3.eye += ((p.hidden ? (p.hidden.kind === 'bed' ? 0.12 : 0.5) : p.crouch ? EYE_CROUCH : EYE) - R3.eye) * Math.min(1, dt * 10);
+  const bob = (p.moving && p.z <= 0) ? Math.sin(p.step * 1.2) * (p.crouch ? .015 : .035) : 0;
+  const eyeY = R3.eye + bob + (p.z || 0);
+  cam3.position.set(p.x, eyeY, p.y);
+  cam3.lookAt(p.x + Math.cos(p.dir), eyeY, p.y + Math.sin(p.dir));
   ambient.intensity = DIFF.amb * 1.6;
   spot.visible = flashlight;
   // 손전등이 없는 직업은 아주 희미한 빛만
@@ -1534,15 +2306,63 @@ function render(dt) {
     : `💊 ${G.kits} · 🍱 ${G.food}${k('(Q)')}`;
   toolHud.textContent = `🔨 ${G.p.tools}/3 · ${jobTxt}`;
 
-  let st = G.p.crouch ? '🫣 웅크림 — 괴물이 당신을 찾을 수 없습니다' : '🚶 서 있음 — 괴물에게 보일 수 있습니다';
-  if (G.m.wake > 0) st = '괴물이 깨어나기까지 ' + Math.ceil(G.m.wake) + '초… 친구들이 흩어집니다!';
+  const closetEl = $('closet'), hid = running && !G.over && G.p.hidden;
+  closetEl.classList.toggle('hidden', !hid);
+  document.body.classList.toggle('hiding', !!hid);
+  closetEl.classList.toggle('underbed', !!hid && G.p.hidden.kind === 'bed');
+  $('bLeave').classList.toggle('hidden', !hid);
+  $('bLeave').textContent = hid ? `🚪 나가기${isTouch ? '' : ' (E)'}` : '';
+  $('bQuit').classList.toggle('hidden', !(running && !G.over));
+  // 👁️ 지지직 · "나가" · 점프스케어
+  const haunt = (running && !G.over && G.p.hidden && G.hideT >= HAUNT_AT)
+    ? Math.min(1, 0.35 + (G.hideT - HAUNT_AT) / (HAUNT_GAP * 2 + 0.9) * 0.65) : 0;
+  drawStatic(haunt * (0.45 + Math.random() * 0.25)); setStatic(haunt);
+  const go = $('getout');
+  if (G.getOutT > 0 && G.p.hidden) {
+    G.getOutT -= dt;
+    go.classList.remove('hidden'); go.textContent = G.getOutText;
+    go.style.left = G.getOutX + '%'; go.style.top = G.getOutY + '%';
+    go.style.fontSize = `min(${10 + G.hauntN * 5}vw, ${90 + G.hauntN * 45}px)`;
+    go.style.opacity = Math.random() < 0.15 ? 0.2 : Math.min(1, G.getOutT * 2);
+  } else go.classList.add('hidden');
+  const scaring = G.scareT > 0;
+  scCv.classList.toggle('hidden', !scaring);
+  $('wrap').classList.toggle('shake', scaring); $('hud').classList.toggle('shake', scaring);
+  if (scaring) {
+    G.scareT -= dt;
+    const el = G.scareDur - G.scareT;
+    if (G.scareKind !== 'monster') drawScare(el);
+    else if (el < CATCH_TIME) drawMonsterScare(el);
+    else drawEaten(el - CATCH_TIME);
+    $('wrap').classList.toggle('shake', G.scareKind !== 'monster' || el < CATCH_TIME || G.eatShake > 0);
+  }
+  if (G.endPending && G.scareT <= 0) { G.endPending = false; $('endScreen').classList.remove('hidden'); }
+
+  // 💓 숨 고르기 미니게임 화면
+  const calmOn = running && !G.over && G.calmOn;
+  $('calm').classList.toggle('hidden', !calmOn);
+  if (calmOn) {
+    $('calmBpm').textContent = Math.round(70 + G.heart * 1.1);
+    $('calmMeterFill').style.width = G.heart + '%';
+    $('calmZone').style.left = ((G.zone - G.zoneW / 2) * 100) + '%'; $('calmZone').style.width = (G.zoneW * 100) + '%';
+    $('calmNeedle').style.left = (G.needle * 100) + '%';
+    const beatPh = (G.t * (70 + G.heart * 1.1) / 60) % 1;
+    $('calmHeart').style.transform = `scale(${1 + (beatPh < 0.15 ? 0.35 : 0) * (0.4 + G.heart / 100)})`;
+    $('calm').classList.toggle('hit', G.calmFx > 0); $('calm').classList.toggle('miss', G.calmFx < 0);
+  }
+  if (hid) closetEl.dataset.msg = `${HIDE_ICON(G.p.hidden)} ${G.p.hidden.name} ${HIDE_IN(G.p.hidden)} 숨어 있어요` + (isTouch ? '' : ' — 괴물이 찾지 못해요 (E: 나가기)');
+
+  let st = G.p.hidden ? `${HIDE_ICON(G.p.hidden)} ${G.p.hidden.name} ${HIDE_IN(G.p.hidden)} 숨음 — 괴물이 당신을 찾을 수 없습니다`
+    : G.p.crouch ? '🫣 웅크림 — 괴물 눈에 안 보여요 (닿으면 잡혀요!)' : '🚶 서 있음 — 괴물에게 보일 수 있습니다';
+  if (G.m.state === 'open' && G.p.hidden === G.m.openObj) st = `😱 괴물이 ${G.m.openObj.name}${G.m.openObj.kind === 'bed' ? ' 밑을 들여다보러' : '을(를) 열러'} 옵니다! 나가서 도망치세요!`;
+  else if (G.m.wake > 0) st = '괴물이 깨어나기까지 ' + Math.ceil(G.m.wake) + '초… 친구들이 흩어집니다!';
   else if (G.m.stun > 0) st = `💫 괴물이 비비탄에 맞아 ${Math.ceil(G.m.stun)}초 동안 못 움직입니다! 지금이 기회!`;
   else if (G.m.state === 'chase' && G.m.tgt === G.p) st = '⚠️ 괴물이 당신을 쫓아옵니다! 웅크리세요! (C / Shift)';
   else if (G.m.state === 'chase') st = `⚠️ 괴물이 ${G.m.tgt.name}을(를) 쫓고 있습니다!`;
   else if (G.m.bashing >= 0) st = `💥 괴물이 ${G.doors[G.m.bashing].name}을(를) 부수는 중… 시간을 벌었다!`;
   else if (G.m.state === 'search') st = '👁️ 괴물이 주변을 뒤지고 있습니다…' + (G.p.crouch ? ' (웅크림: 안전)' : '');
   stateEl.textContent = st;
-  stateEl.style.color = (G.m.state === 'chase' && G.m.tgt === G.p) ? '#ff6b6b' : G.p.crouch ? '#9fd3ff' : '#e8e6e3';
+  stateEl.style.color = ((G.m.state === 'chase' && G.m.tgt === G.p) || (G.m.state === 'open' && G.p.hidden)) ? '#ff6b6b' : (G.p.crouch || G.p.hidden) ? '#9fd3ff' : '#e8e6e3';
 
   let msg = '';
   if (G.flashT > 0) msg = G.flash;
@@ -1550,6 +2370,7 @@ function render(dt) {
   else if (G.useTarget === 'water') msg = '싱크대: E 길게 눌러 물 마시기';
   else if (G.useTarget === 'revive') msg = `💊 ${G.reviveF.name}: ${isTouch ? '행동' : 'E'} 길게 눌러 살리기 (구급상자 ${G.kits}개)`;
   else if (G.useTarget === 'door') msg = `${G.useDoor.name}: E 길게 눌러 문 막기 (도구 1개)`;
+  else if (G.hideObj) msg = `${HIDE_ICON(G.hideObj)} ${G.hideObj.name}: ${isTouch ? '행동' : 'E'} 눌러 ${HIDE_IN(G.hideObj)} 숨기`;
   else if (G.hunger < 25 || G.thirst < 25) msg = (G.hunger < 25 ? '배가 고프다… ' : '') + (G.thirst < 25 ? '목이 마르다… ' : '') + '부엌으로 가자 (오른쪽 위)';
   msgEl.textContent = msg;
   msgEl.style.color = (G.hunger <= 0 || G.thirst <= 0) ? '#ff6b6b' : '#fff';
@@ -1584,7 +2405,7 @@ function loop(ts) {
 
 function start() {
   try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch (e) {}
-  reset(); crouchToggle = false;
+  reset(); crouchToggle = false; hidePress = false; jumpPress = false;
   flashlight = JOB === 'survival';
   $('bFlash').innerHTML = JOB === 'survival' ? '🔦' : JOB === 'sentinel' ? (WEAPON === 'knife' ? '🗡️<br>공격' : '🔫<br>발사') : '🍱<br>먹기';
   $('bFlash').style.fontSize = JOB === 'survival' ? '26px' : '14px';
