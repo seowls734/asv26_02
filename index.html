@@ -64,6 +64,12 @@
   #scare { position:fixed; inset:0; width:100%; height:100%; z-index:50; pointer-events:none; }
   #wrap.shake, #hud.shake { animation:shake .06s linear infinite; }
   @keyframes shake { 0% { transform:translate(8px,-6px); } 33% { transform:translate(-9px,5px); } 66% { transform:translate(5px,9px); } 100% { transform:translate(-6px,-8px); } }
+  /* 🧪 테스트 모드 패널 */
+  body.touch #testPanel { bottom:calc(300px + env(safe-area-inset-bottom)); }
+  @media (max-height:500px) { body.touch #testPanel { bottom:auto; top:96px; } }
+  #testPanel { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(12px + env(safe-area-inset-bottom)); z-index:8; background:rgba(30,60,120,.8); border:1px solid #6f9be0; border-radius:10px; padding:5px 10px; font-size:12px; color:#dfe9ff; white-space:nowrap; display:flex; gap:6px; align-items:center; }
+  #testPanel button { font:inherit; font-size:12px; color:#fff; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.4); border-radius:7px; padding:5px 8px; cursor:pointer; }
+  body.hiding #testPanel { display:none; }
   /* 💓 숨 고르기 미니게임 */
   #calm { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(16% + 44px); width:min(440px, calc(100vw - 32px)); box-sizing:border-box; z-index:7; background:rgba(10,4,6,.82); border:2px solid #a8323e; border-radius:14px; padding:10px 14px 12px; text-align:center; color:#fff; }
   #calm.hit { border-color:#6fe08a; } #calm.miss { border-color:#ff4b4b; background:rgba(60,4,8,.9); }
@@ -175,12 +181,13 @@
 
 <div class="overlay" id="startScreen">
   <h1>한밤의 숨바꼭질</h1>
-  <p>당신과 친구 <b>10명</b>이 괴물이 사는 집에 갇혔습니다. <b>새벽 6시</b>까지 모두 살아남으세요.</p>
+  <p>당신과 친구 <b>10명</b>이 괴물이 사는 <b id="mapWhere">집</b>에 갇혔습니다. <b>새벽 6시</b>까지 모두 살아남으세요.</p>
   <p>🔨 <b>도구팀 5명</b>은 집 안의 도구(망치·판자·못)를 찾아 <b>문을 막습니다.</b> 괴물은 막힌 문을 부수느라 시간을 뺏깁니다.<br>
      🫣 <b>숨기팀 5명</b>은 그 사이 구석으로 가서 웅크리고 숨습니다.<br>
-     🔫 숨기팀은 <b>비비탄총(탄약 10발)</b>을 갖고 있어요. 한 발 맞으면 괴물이 <b>10초</b>, 세 발이면 <b>30초</b> 동안 움직이지 못합니다.</p>
+     🔫 숨기팀은 <b>비비탄총(탄약 10발)</b>을 갖고 있어요. 한 발 맞으면 괴물이 <b>10초</b>, 세 발이면 <b>30초</b> 동안 움직이지 못합니다.<br>
+     🎯 <b id="mapAmmo">창고</b>의 <b>탄약 상자</b>에서 E를 길게 누르면 총(센티널)의 비비탄을 가득 채울 수 있어요.</p>
   <p>당신도 도구를 주워(자동) 문 앞에서 <b>E</b>를 눌러 문을 막을 수 있어요.<br>
-     <span style="color:var(--hunger)">배고픔</span>·<span style="color:var(--thirst)">목마름</span>이 0이 되면 체력이 줄어드니 <b>부엌</b>의 냉장고·싱크대에서 E로 먹고 마시세요.</p>
+     <span style="color:var(--hunger)">배고픔</span>·<span style="color:var(--thirst)">목마름</span>이 0이 되면 체력이 줄어드니 <b id="mapFood">부엌의 냉장고·싱크대</b>에서 E로 먹고 마시세요.</p>
   <p><b>웅크리면 괴물 눈에 보이지 않습니다.</b> (당신도, 친구들도) 대신 느려지고, 먹거나 문을 막을 때는 일어서야 해요.<br>
      ☠️ 단, <b>괴물에게 너무 가까이 가면</b> 웅크려 있어도 잡혀요!</p>
   <p>💓 숨어 있는데 괴물이 가까이 오면 <b>심장이 빨리 뛰어요.</b> 움직이는 바늘이 <b style="color:#6fe08a">초록 칸</b>에 올 때 <b>Space</b>(폰: 숨 고르기 버튼)를 눌러 심박수를 낮추세요. 심박수가 끝까지 차면 괴물이 심장 소리를 듣고 찾아와요!</p>
@@ -190,7 +197,10 @@
   <p>🔦 <b>1인칭 시점</b>입니다. 집 안은 아주 어두워요. 작은 지도와 🗺 집 전체 지도를 보며 움직이세요.</p>
   <p class="keys keyOnly">W/S(↑/↓): 앞뒤 이동 · A/D(←/→) 또는 마우스(화면 클릭): 둘러보기 · F: 손전등 켜기/끄기<br>C 또는 Shift: 웅크리기 · Space: 점프 · E: 옷장·상자에 숨기/나오기 · E 길게: 먹기/문 막기/친구 살리기 · Q: 직업 기술 · M: 집 전체 지도 · Esc: 마우스 해제</p>
   <p class="keys touchOnly">📱 왼쪽 조이스틱: 위아래로 이동 · 좌우로 둘러보기<br>행동: 옷장·상자·침대 밑에 숨기/나오기 · 행동 길게: 먹기/문 막기/친구 살리기 · 웅크리기 · 점프 · 💓 숨 고르기(숨어 있을 때) · 직업 버튼(🔦/🗡️/🔫/🍱) · 🗺 집 전체 지도</p>
-  <p style="margin-top:14px"><b>1. 직업을 선택하세요</b></p>
+  <p style="margin-top:14px"><b>🗺️ 맵을 선택하세요</b></p>
+  <div class="jobs" id="mapPick"></div>
+  <p id="mapDesc" style="color:#9fd3ff;font-size:13px"></p>
+  <p style="margin-top:10px"><b>1. 직업을 선택하세요</b></p>
   <div class="jobs" id="jobPick">
     <button data-job="survival" class="sel">🔦 서바이벌<small>손전등을 가지고 시작 (F)</small></button>
     <button data-job="sentinel">🛡️ 센티널<small>칼이나 총으로 괴물 기절 (Q)</small></button>
@@ -207,6 +217,14 @@
     <button data-diff="normal" style="background:#c98a1e">보통<small>기본 설정</small></button>
     <button data-diff="hard" style="background:#b02a2a">어려움<small>괴물 빠름 · 넓은 시야 · 어두움</small></button>
   </div>
+  <div class="diffs" style="margin-top:6px">
+    <button id="testBtn" style="background:#3a5fa0">🧪 테스트 모드<small>괴물 없음 · 밝음 · 배고픔·공격 없음 · 친구들만</small></button>
+  </div>
+</div>
+
+<!-- 🧪 테스트 모드 전용: 엔딩 미리보기 -->
+<div id="testPanel" class="hidden">🧪 테스트 모드
+  <button id="tDawn">🌅 새벽 엔딩 보기</button><button id="tEaten">😈 잡힘 엔딩 보기</button>
 </div>
 
 <div class="overlay hidden" id="endScreen">
@@ -219,7 +237,9 @@
 (() => {
 'use strict';
 const T = 32, W = 30, H = 20;
-const MAP = [
+// ================= 🗺️ 맵 =================
+// 처음 화면에서 맵을 고르면 주소에 ?map=… 을 붙여 페이지를 다시 불러옴 → 아래 모든 것이 그 맵 기준으로 만들어짐
+const HOUSE_GRID = [
   "##############################",
   "#.........#........#........F#",
   "#.bbb.....#........#.........#",
@@ -241,47 +261,228 @@ const MAP = [
   "#.........#..........#.......#",
   "##############################",
 ];
-// 숨을 수 있는 오브젝트 (옷장·수납장·큰 상자) — x,y: 놓인 칸 / fx,fy: 앞쪽(들어가고 나오는) 칸
-const HIDE_OBJS = [
-  { name:'침실 옷장',   kind:'wardrobe', x:8,  y:1,  fx:8,  fy:2 },
-  { name:'거실 옷장',   kind:'wardrobe', x:11, y:4,  fx:12, fy:4 },
-  { name:'부엌 찬장',   kind:'cabinet',  x:21, y:7,  fx:21, fy:6 },
-  { name:'욕실 수납장', kind:'cabinet',  x:8,  y:12, fx:8,  fy:13 },
-  { name:'서재 옷장',   kind:'wardrobe', x:19, y:18, fx:19, fy:17 },
-  { name:'창고 큰 상자', kind:'crate',   x:23, y:18, fx:23, fy:17 },
-  // 침대 (밑에 숨기) — 침실 침대는 원래 있던 가구(b), 서재 침대는 새로 놓음
-  { name:'침실 침대', kind:'bed', x:2,  y:2,  w:3, h:2, existing:true },
-  { name:'서재 침대', kind:'bed', x:16, y:17, w:3, h:2, blanket:'#8e5bd6' },
-];
+// 새 맵: 벽 사각형 + 문(막을 수 있음) + 통로(gaps, 못 막음)로 격자를 만듦
+function buildGrid(spec) {
+  const g = [];
+  for (let y = 0; y < H; y++) { g.push([]); for (let x = 0; x < W; x++) g[y].push(x === 0 || y === 0 || x === W - 1 || y === H - 1 ? '#' : '.'); }
+  for (const [x0, y0, x1, y1] of spec.walls) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y][x] = '#';
+  for (const [, tiles] of spec.doors) for (const [x, y] of tiles) g[y][x] = '.';
+  for (const [x, y] of spec.gaps || []) g[y][x] = '.';
+  return g.map(r => r.join(''));
+}
+// 방: [이름, x0, y0, x1, y1, 바닥 종류, 바닥색 RGB, 벽색 RGB]
+// 소품(막힘): [종류, x, y, w, h]  · 숨는 곳: kind = wardrobe/cabinet/locker/confessional/crate/barrel/log/coffin/bush (안에) · bed/pew (밑에)
+const MAPS = {
+  house: {
+    name:'집', icon:'🏠', where:'괴물이 사는 집', desc:'🏠 기본 맵. 침실·거실·부엌·욕실·서재·창고가 있는 2층 없는 집이에요.',
+    grid: HOUSE_GRID,
+    roomOf(x, y) {
+      if (y < 8) return x < 10 ? '침실' : x < 19 ? '거실' : '부엌';
+      if (y < 11) return '복도';
+      return x < 10 ? '욕실' : x < 21 ? '서재' : '창고';
+    },
+    labels: [['침실',5,1.2],['거실',14.5,1.2],['부엌',24,1.2],['복도',15,9.2],['욕실',5,12.2],['서재',15.5,12.2],['창고',25,12.2]],
+    wallRGB: { '침실':[201,160,180], '거실':[205,180,142], '부엌':[216,216,204], '복도':[184,166,138], '욕실':[168,203,216], '서재':[143,165,138], '창고':[150,150,150] },
+    lamps: [[5,4],[14.5,4.5],[24,4],[15,9.8],[5,15],[15.5,15],[25,15]],
+    doors: [
+      ['침실 아래문', [[5,8],[6,8]]], ['거실 아래문', [[15,8],[16,8]]], ['부엌 아래문', [[24,8],[25,8]]],
+      ['욕실 윗문', [[5,11],[6,11]]], ['서재 윗문', [[16,11],[17,11]]], ['창고 윗문', [[24,11],[25,11]]],
+      ['침실-거실 문', [[10,6]]], ['거실-부엌 문', [[19,6]]], ['욕실-서재 문', [[10,15]]], ['서재-창고 문', [[21,15]]],
+    ],
+    food: { x:28, y:1, name:'냉장고' }, water: { x:28, y:4, name:'싱크대' }, foodHint:'부엌(오른쪽 위)',
+    hideObjs: [
+      { name:'침실 옷장',   kind:'wardrobe', x:8,  y:1,  fx:8,  fy:2 },
+      { name:'거실 옷장',   kind:'wardrobe', x:11, y:4,  fx:12, fy:4 },
+      { name:'부엌 찬장',   kind:'cabinet',  x:21, y:7,  fx:21, fy:6 },
+      { name:'욕실 수납장', kind:'cabinet',  x:8,  y:12, fx:8,  fy:13 },
+      { name:'서재 옷장',   kind:'wardrobe', x:19, y:18, fx:19, fy:17 },
+      { name:'창고 큰 상자', kind:'crate',   x:23, y:18, fx:23, fy:17 },
+      { name:'침실 침대', kind:'bed', x:2,  y:2,  w:3, h:2, existing:true },
+      { name:'서재 침대', kind:'bed', x:16, y:17, w:3, h:2, blanket:'#8e5bd6' },
+    ],
+    ammo: { x:28, y:16, room:'창고' },
+    hideSpots: [[1,1],[8,5],[11,7],[18,2],[1,18],[9,17],[12,18],[20,16],[27,18],[22,12],[1,12],[18,7],[27,6],[13,14]],
+    monster: [3.5, 15.5], patrol: [22, 2, 6, 5],
+  },
+
+  ship: {
+    name:'여객선', icon:'🚢', where:'한밤중 바다 위의 여객선', desc:'🚢 밤바다를 떠도는 여객선. 선실 침대 밑, 사물함, 화물 상자에 숨을 수 있어요.',
+    walls: [[1,8,28,8],[1,11,28,11],[9,1,9,7],[19,1,19,7],[12,12,12,18],[21,12,21,18]],
+    doors: [['선실1 문',[[4,8],[5,8]]],['선실2 문',[[14,8],[15,8]]],['식당 문',[[24,8],[25,8]]],['화물칸 문',[[6,11],[7,11]]],['기관실 문',[[16,11],[17,11]]],['조타실 문',[[25,11],[26,11]]],
+            ['선실1-선실2 문',[[9,4]]],['선실2-식당 문',[[19,4]]],['화물칸-기관실 문',[[12,15]]],['기관실-조타실 문',[[21,15]]]],
+    rooms: [['선실1',1,1,8,7,'carpet',[64,78,122],[205,195,175]], ['선실2',10,1,18,7,'carpet',[118,64,72],[210,198,178]], ['식당',20,1,28,7,'tile',[214,214,204],[220,218,205]],
+            ['복도',1,9,28,10,'deck',[150,108,68],[185,172,150]], ['화물칸',1,12,11,18,'metal',[112,116,122],[118,124,130]], ['기관실',13,12,20,18,'metal',[82,86,92],[98,104,110]], ['조타실',22,12,28,18,'wood',[150,104,64],[175,152,120]]],
+    wall2D: ['#d6cfbf','#a69d8b'],
+    food: { x:28, y:1, name:'식당 냉장고' }, water: { x:28, y:4, name:'식수대' }, foodHint:'식당(오른쪽 위)',
+    props: [['table',22,3,3,2],['crate',2,13],['crate',3,13],['crate',2,14],['crate',9,17],['crate',10,17],['machine',14,13,2,2],['machine',18,13,2,2],['machine',14,17,2,1],['wheel',25,14],['table',26,17,2,1]],
+    rugs: [[10.3,4.6,4,2,'#2e3a5c','#c9b27a']],
+    hideObjs: [
+      { name:'선실1 침대', kind:'bed', x:2, y:2, w:3, h:2, blanket:'#3a6ea5' },
+      { name:'선실1 사물함', kind:'locker', x:8, y:1, fx:8, fy:2 },
+      { name:'선실2 침대', kind:'bed', x:15, y:2, w:3, h:2, blanket:'#c0504d' },
+      { name:'선실2 사물함', kind:'locker', x:10, y:1, fx:10, fy:2 },
+      { name:'식당 찬장', kind:'cabinet', x:20, y:7, fx:20, fy:6 },
+      { name:'화물 상자', kind:'crate', x:5, y:18, fx:5, fy:17 },
+      { name:'기관실 사물함', kind:'locker', x:20, y:18, fx:20, fy:17 },
+      { name:'구명조끼 함', kind:'crate', x:28, y:18, fx:27, fy:18 },
+    ],
+    ammo: { x:11, y:14, room:'화물칸' },
+    hideSpots: [[1,1],[1,7],[8,6],[10,7],[18,6],[21,1],[27,6],[1,12],[1,18],[13,12],[20,12],[13,18],[22,12],[28,12]],
+    monster: [3.5, 16.5], patrol: [21, 1, 6, 6],
+  },
+
+  forest: {
+    name:'숲', icon:'🌲', where:'안개 낀 밤의 숲속 캠프', desc:'🌲 안개 낀 숲속 캠프장. 덤불과 오두막, 속 빈 통나무에 숨어 아침까지 버티세요.',
+    outdoor: true, sky: 0x070a14, hedge: true,
+    walls: [[1,8,28,8],[1,11,28,11],[10,1,10,7],[20,1,20,7],[9,12,9,18],[19,12,19,18]],
+    doors: [['오두막 문',[[5,8],[6,8]]],['캠프장 길',[[14,8],[15,8]]],['호숫가 길',[[24,8],[25,8]]],['버섯숲 길',[[4,11],[5,11]]],['늪 길',[[13,11],[14,11]]],['동굴 길',[[24,11],[25,11]]],
+            ['오두막 뒷문',[[10,3]]],['호숫가 샛길',[[20,5]]],['버섯숲 샛길',[[9,16]]],['동굴 샛길',[[19,14]]]],
+    gaps: [[2,8],[27,11]],
+    rooms: [['오두막',1,1,9,7,'wood',[146,102,62],[112,82,52]], ['캠프장',11,1,19,7,'dirt',[118,94,60],[44,78,42]], ['호숫가',21,1,28,7,'grass',[66,104,58],[44,78,42]],
+            ['숲길',1,9,28,10,'dirt',[136,112,74],[44,78,42]], ['버섯숲',1,12,8,18,'grass',[52,86,48],[38,68,36]], ['늪',10,12,18,18,'mud',[68,72,44],[38,68,36]], ['동굴입구',20,12,28,18,'stone',[108,108,102],[84,84,80]]],
+    wall2D: ['#2e4a2a','#1f3520'],
+    food: { x:18, y:1, name:'캠프 식량 상자' }, water: { x:28, y:2, name:'우물' }, foodHint:'캠프장(위 가운데)·우물(오른쪽 위)',
+    props: [['table',4,4,2,1],['tent',12,2,2,2],['campfire',15,4],['bench',16,6,2,1],['pond',24,2,3,2],['tree',22,2],['tree',27,5],['tree',23,6],
+            ['tree',3,13],['tree',6,15],['tree',2,17],['tree',12,14],['tree',16,16],['rock',14,17],['rock',25,14],['rock',27,16],['rock',22,17]],
+    hideObjs: [
+      { name:'오두막 침대', kind:'bed', x:2, y:2, w:3, h:2, blanket:'#6a8a3a' },
+      { name:'오두막 옷장', kind:'wardrobe', x:8, y:1, fx:8, fy:2 },
+      { name:'캠프장 덤불', kind:'bush', x:11, y:7, fx:12, fy:7 },
+      { name:'호숫가 덤불', kind:'bush', x:21, y:1, fx:21, fy:2 },
+      { name:'버섯숲 덤불', kind:'bush', x:1, y:13, fx:2, fy:13 },
+      { name:'늪 덤불', kind:'bush', x:17, y:18, fx:17, fy:17 },
+      { name:'속 빈 통나무', kind:'log', x:28, y:18, fx:27, fy:18 },
+    ],
+    ammo: { x:28, y:13, room:'동굴입구' },
+    hideSpots: [[1,1],[9,7],[11,6],[19,1],[28,7],[1,7],[1,18],[8,12],[10,18],[18,12],[20,18],[28,12]],
+    monster: [4.5, 16.5], patrol: [11, 1, 8, 6],
+  },
+
+  cemetery: {
+    name:'묘지', icon:'🪦', where:'안개 낀 밤의 공동묘지', desc:'🪦 안개 낀 공동묘지. 묘비 사이를 지나 납골당의 관과 관리소에 숨으세요.',
+    outdoor: true, sky: 0x060810,
+    walls: [[1,8,28,8],[1,11,28,11],[7,1,7,7],[22,1,22,7],[11,12,11,18],[18,12,18,18]],
+    doors: [['관리소 문',[[3,8],[4,8]]],['서쪽 묘역 문',[[14,8],[15,8]]],['납골당 문',[[25,8],[26,8]]],['옛 묘역 문',[[5,11],[6,11]]],['광장 문',[[14,11],[15,11]]],['동쪽 묘역 문',[[23,11],[24,11]]],
+            ['관리소 옆문',[[7,4]]],['납골당 옆문',[[22,4]]],['옛 묘역 샛문',[[11,15]]],['동쪽 샛문',[[18,15]]]],
+    rooms: [['관리소',1,1,6,7,'wood',[138,98,64],[150,130,110]], ['서쪽 묘역',8,1,21,7,'grass',[58,84,54],[92,92,98]], ['납골당',23,1,28,7,'stone',[120,118,112],[140,138,132]],
+            ['산책로',1,9,28,10,'stone',[128,122,112],[96,96,102]], ['옛 묘역',1,12,10,18,'grass',[48,70,44],[92,92,98]], ['무덤 광장',12,12,17,18,'dirt',[104,90,70],[96,96,102]], ['동쪽 묘역',19,12,28,18,'grass',[58,84,54],[92,92,98]]],
+    wall2D: ['#6d6d72','#505056'],
+    food: { x:6, y:1, name:'관리소 식량 선반' }, water: { x:1, y:1, name:'수돗가' }, foodHint:'관리소(왼쪽 위)',
+    props: [['table',3,4,2,1],
+            ['tomb',9,2],['tomb',11,2],['tomb',13,2],['tomb',16,2],['tomb',18,2],['tomb',20,2],['tomb',9,5],['tomb',11,5],['tomb',13,5],['tomb',16,5],['tomb',18,5],['tomb',20,5],
+            ['pillar',24,3],['pillar',27,3],
+            ['grave',2,13],['grave',4,13],['grave',8,13],['grave',2,16],['grave',4,16],['grave',8,16],
+            ['statue',14,14,2,2],
+            ['tomb',20,13],['tomb',22,13],['tomb',24,13],['tomb',26,13],['tomb',20,16],['tomb',22,16],['tomb',24,16],['tomb',26,16]],
+    hideObjs: [
+      { name:'관리소 옷장', kind:'wardrobe', x:6, y:6, fx:5, fy:6 },
+      { name:'납골당 관', kind:'coffin', x:28, y:5, fx:27, fy:5 },
+      { name:'납골당 석관', kind:'coffin', x:23, y:1, fx:23, fy:2 },
+      { name:'묘지 덤불', kind:'bush', x:8, y:7, fx:9, fy:7 },
+      { name:'빈 관', kind:'coffin', x:6, y:16, fx:6, fy:17 },
+      { name:'광장 덤불', kind:'bush', x:12, y:18, fx:13, fy:18 },
+      { name:'동쪽 덤불', kind:'bush', x:28, y:18, fx:27, fy:18 },
+    ],
+    ammo: { x:1, y:3, room:'관리소' },
+    hideSpots: [[2,6],[8,1],[21,1],[21,7],[23,7],[28,1],[28,7],[1,18],[10,12],[12,12],[17,18],[19,18],[28,12],[10,18]],
+    monster: [2.5, 17.5], patrol: [1, 1, 5, 6],
+  },
+
+  church: {
+    name:'교회', icon:'⛪', where:'버려진 시골 교회', desc:'⛪ 버려진 시골 교회. 긴 의자 밑, 고해소, 지하 묘실의 관에 숨을 수 있어요.',
+    walls: [[1,8,28,8],[1,11,28,11],[7,1,7,7],[22,1,22,7],[10,12,10,18],[19,12,19,18]],
+    doors: [['사제관 문',[[3,8],[4,8]]],['예배당 문',[[14,8],[15,8]]],['종탑 문',[[25,8],[26,8]]],['성물실 문',[[5,11],[6,11]]],['지하 묘실 문',[[14,11],[15,11]]],['성가대실 문',[[23,11],[24,11]]],
+            ['사제관-예배당 문',[[7,5]]],['예배당-종탑 문',[[22,5]]],['성물실-묘실 문',[[10,15]]],['묘실-성가대실 문',[[19,15]]]],
+    rooms: [['사제관',1,1,6,7,'wood',[150,104,68],[215,200,175]], ['예배당',8,1,21,7,'stone',[150,140,124],[226,216,196]], ['종탑',23,1,28,7,'stone',[124,120,112],[176,170,160]],
+            ['회랑',1,9,28,10,'stone',[140,132,118],[200,190,170]], ['성물실',1,12,9,18,'wood',[118,84,54],[190,175,150]], ['지하 묘실',11,12,18,18,'stone',[94,92,88],[128,124,118]], ['성가대실',20,12,28,18,'wood',[158,114,74],[210,195,170]]],
+    wall2D: ['#e6dcc6','#bfb294'],
+    food: { x:1, y:1, name:'사제관 찬장' }, water: { x:6, y:7, name:'물항아리' }, foodHint:'사제관(왼쪽 위)',
+    props: [['altar',14,1,2,1],['bench',9,3,4,1],['bench',17,5,4,1],['pillar',25,3],['pillar',27,6],['table',3,3,2,1],['shelf',1,12,3,1],['crate',8,17],
+            ['coffin',12,13],['coffin',16,13],['coffin',17,17],['piano',26,13,2,1],['bench',22,16,3,1]],
+    rugs: [[13.1,2,3.8,5.9,'#8a2430','#d8b45a']],
+    hideObjs: [
+      { name:'예배당 고해소', kind:'confessional', x:21, y:1, fx:21, fy:2 },
+      { name:'입구 고해소', kind:'confessional', x:8, y:1, fx:8, fy:2 },
+      { name:'앞줄 긴 의자', kind:'pew', x:17, y:3, w:4, h:1 },
+      { name:'뒷줄 긴 의자', kind:'pew', x:9, y:5, w:4, h:1 },
+      { name:'사제관 옷장', kind:'wardrobe', x:6, y:1, fx:6, fy:2 },
+      { name:'묘실 관', kind:'coffin', x:12, y:17, fx:12, fy:16 },
+      { name:'성물실 수납장', kind:'cabinet', x:1, y:18, fx:2, fy:18 },
+      { name:'성가대 옷장', kind:'wardrobe', x:28, y:18, fx:27, fy:18 },
+    ],
+    ammo: { x:28, y:1, room:'종탑' },
+    hideSpots: [[2,7],[9,7],[20,7],[23,1],[28,7],[9,1],[1,14],[9,18],[11,12],[18,18],[20,12],[28,12],[13,15]],
+    monster: [15.5, 16.5], patrol: [1, 1, 5, 6],
+  },
+
+  factory: {
+    name:'공장', icon:'🏭', where:'멈춰 버린 밤의 공장', desc:'🏭 멈춘 밤의 공장. 기계와 컨베이어 사이를 지나 사물함과 드럼통에 숨으세요.',
+    walls: [[1,8,28,8],[1,11,28,11],[9,1,9,7],[22,1,22,7],[8,12,8,18],[21,12,21,18]],
+    doors: [['사무실 문',[[4,8],[5,8]]],['조립 라인 문',[[15,8],[16,8]]],['휴게실 문',[[25,8],[26,8]]],['보일러실 문',[[3,11],[4,11]]],['부품 창고 문',[[14,11],[15,11]]],['하역장 문',[[25,11],[26,11]]],
+            ['사무실-조립 문',[[9,4]]],['조립-휴게실 문',[[22,4]]],['보일러-창고 문',[[8,15]]],['창고-하역장 문',[[21,15]]]],
+    rooms: [['사무실',1,1,8,7,'tile',[184,184,178],[190,195,200]], ['조립 라인',10,1,21,7,'metal',[104,110,116],[140,145,150]], ['휴게실',23,1,28,7,'tile',[200,190,170],[200,200,190]],
+            ['복도',1,9,28,10,'concrete',[124,124,118],[150,150,145]], ['보일러실',1,12,7,18,'metal',[84,84,90],[110,100,95]], ['부품 창고',9,12,20,18,'concrete',[114,112,104],[140,140,135]], ['하역장',22,12,28,18,'concrete',[128,124,108],[150,140,110],true]],
+    wall2D: ['#a7abb0','#7d8187'],
+    food: { x:28, y:1, name:'자판기' }, water: { x:28, y:5, name:'정수기' }, foodHint:'휴게실(오른쪽 위)',
+    props: [['conveyor',11,3,10,1],['machine',12,5,2,2],['machine',17,5,2,2],['table',2,2,2,1],['table',5,2,2,1],['table',24,4,2,1],
+            ['machine',2,13,3,2],['barrel',6,13],['crate',10,13],['crate',11,13],['crate',10,14],['crate',16,13],['crate',17,13],['crate',12,17],['crate',16,17],['crate',17,17],
+            ['crate',24,14],['crate',25,14],['barrel',27,16]],
+    hideObjs: [
+      { name:'휴게실 사물함', kind:'locker', x:23, y:1, fx:23, fy:2 },
+      { name:'휴게실 사물함 2', kind:'locker', x:24, y:1, fx:24, fy:2 },
+      { name:'사무실 캐비닛', kind:'cabinet', x:8, y:1, fx:8, fy:2 },
+      { name:'부품 상자', kind:'crate', x:20, y:18, fx:19, fy:18 },
+      { name:'보일러실 드럼통', kind:'barrel', x:7, y:18, fx:6, fy:18 },
+      { name:'하역장 드럼통', kind:'barrel', x:28, y:18, fx:27, fy:18 },
+      { name:'공구함', kind:'cabinet', x:21, y:7, fx:20, fy:7 },
+    ],
+    ammo: { x:22, y:12, room:'하역장' },
+    hideSpots: [[1,1],[1,7],[10,1],[21,1],[10,7],[27,7],[1,12],[7,12],[9,18],[20,12],[28,12],[23,18],[13,15]],
+    monster: [5.5, 16.5], patrol: [23, 1, 5, 6],
+  },
+};
+const MAP_ID = (() => { try { const q = new URLSearchParams(location.search).get('map'); if (q && MAPS[q]) return q; } catch (e) {} return 'house'; })();
+const MD = MAPS[MAP_ID], HOUSE = MAP_ID === 'house';
+const MAP = MD.grid ? MD.grid.slice() : buildGrid(MD);
+const setTile = (x, y, ch) => { MAP[y] = MAP[y].slice(0, x) + ch + MAP[y].slice(x + 1); };
+// 소품 (막히는 칸 'P'). 새 맵에선 음식·물도 소품으로 놓음
+const PROPS = (MD.props || []).map(([kind, x, y, w = 1, h = 1]) => ({ kind, x, y, w, h }));
+if (!HOUSE) PROPS.push({ kind:'food', x:MD.food.x, y:MD.food.y, w:1, h:1 }, { kind:'water', x:MD.water.x, y:MD.water.y, w:1, h:1 });
+PROPS.forEach(p => { for (let y = p.y; y < p.y + p.h; y++) for (let x = p.x; x < p.x + p.w; x++) setTile(x, y, 'P'); });
+// 숨을 수 있는 오브젝트 — x,y: 놓인 칸 / fx,fy: 앞쪽(문이 향하는) 칸
+const HIDE_OBJS = MD.hideObjs.map(o => Object.assign({}, o));
+// 🎯 비비탄 탄약 상자 (E 길게 → 총알 채우기)
+const AMMO_BOX = MD.ammo;
+setTile(AMMO_BOX.x, AMMO_BOX.y, 'A');
 HIDE_OBJS.forEach(o => {
   o.w = o.w || 1; o.h = o.h || 1; o.cx = o.x + o.w / 2; o.cy = o.y + o.h / 2;
   if (o.existing) return;
-  for (let y = o.y; y < o.y + o.h; y++) for (let x = o.x; x < o.x + o.w; x++) MAP[y] = MAP[y].slice(0, x) + 'K' + MAP[y].slice(x + 1);
+  for (let y = o.y; y < o.y + o.h; y++) for (let x = o.x; x < o.x + o.w; x++) setTile(x, y, 'K');
 });
 // 사람(e)과 오브젝트 사각형 사이의 가장 가까운 거리
 const objDist = (e, o) => Math.hypot(Math.max(o.x - e.x, 0, e.x - o.x - o.w), Math.max(o.y - e.y, 0, e.y - o.y - o.h));
-const HIDE_ICON = o => o.kind === 'crate' ? '📦' : o.kind === 'bed' ? '🛏️' : '🚪';
-const HIDE_IN = o => o.kind === 'bed' ? '밑에' : '안에';
-const HIDE_OPEN = o => o.kind === 'bed' ? `${o.name} 밑을 들여다봤` : `${o.name}을(를) 열었`;
-const SOLID = '#bcTtdxFSwWK';
+const UNDER = o => o.kind === 'bed' || o.kind === 'pew';            // 밑에 숨는 것
+const HIDE_ICON = o => ({ crate:'📦', bed:'🛏️', pew:'🪑', bush:'🌿', log:'🪵', barrel:'🛢️', coffin:'⚰️' })[o.kind] || '🚪';
+const HIDE_IN = o => UNDER(o) ? '밑에' : (o.kind === 'bush' || o.kind === 'log') ? '속에' : '안에';
+const HIDE_OPEN = o => UNDER(o) ? `${o.name} 밑을 들여다봤` : o.kind === 'bush' ? `${o.name}을(를) 헤집었` : `${o.name}을(를) 열었`;
+const SOLID = '#bcTtdxFSwWKAP';
 const tile = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? '#' : MAP[y][x];
 const isSolid = (x, y) => SOLID.includes(tile(x, y));
 
+// 방
+const ROOMS = (MD.rooms || []).map(r => ({ n:r[0], x0:r[1], y0:r[2], x1:r[3], y1:r[4], floor:r[5], col:r[6], wall:r[7], stripe:!!r[8] }));
+const ROOM_BY = Object.fromEntries(ROOMS.map(r => [r.n, r]));
+const roomRect = (x, y) => ROOMS.find(r => x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1);
 function roomOf(x, y) {
-  if (y < 8) return x < 10 ? '침실' : x < 19 ? '거실' : '부엌';
-  if (y < 11) return '복도';
-  return x < 10 ? '욕실' : x < 21 ? '서재' : '창고';
+  if (MD.roomOf) return MD.roomOf(x, y);
+  const r = roomRect(x, y) || roomRect(x, y - 1) || roomRect(x, y + 1) || roomRect(x - 1, y) || roomRect(x + 1, y);
+  return r ? r.n : ROOMS[0].n;
 }
-const ROOM_FLOOR = { '침실':'#2b2230', '거실':'#2a2620', '부엌':'#1f2a2a', '복도':'#232323', '욕실':'#1e2630', '서재':'#2a2219', '창고':'#222019' };
-const ROOM_LABEL = [['침실',5,1.2],['거실',14.5,1.2],['부엌',24,1.2],['복도',15,9.2],['욕실',5,12.2],['서재',15.5,12.2],['창고',25,12.2]];
-const FRIDGE = { x:28, y:1 }, SINK = { x:28, y:4 };
+const ROOM_LABEL = MD.labels || ROOMS.map(r => [r.n, (r.x0 + r.x1 + 1) / 2, r.y0 + 0.2]);
+const FRIDGE = MD.food, SINK = MD.water;
 
 // 문 (막을 수 있는 통로)
-const DOOR_DEFS = [
-  ['침실 아래문', [[5,8],[6,8]]], ['거실 아래문', [[15,8],[16,8]]], ['부엌 아래문', [[24,8],[25,8]]],
-  ['욕실 윗문', [[5,11],[6,11]]], ['서재 윗문', [[16,11],[17,11]]], ['창고 윗문', [[24,11],[25,11]]],
-  ['침실-거실 문', [[10,6]]], ['거실-부엌 문', [[19,6]]], ['욕실-서재 문', [[10,15]]], ['서재-창고 문', [[21,15]]],
-];
+const DOOR_DEFS = MD.doors;
 const doorAt = new Int8Array(W * H).fill(-1);
 DOOR_DEFS.forEach(([, tiles], i) => tiles.forEach(([x, y]) => doorAt[y * W + x] = i));
 const isDoorTile = (x, y) => doorAt[y * W + x] >= 0;
@@ -289,7 +490,8 @@ const isDoorTile = (x, y) => doorAt[y * W + x] >= 0;
 const walkable = [];
 for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (!isSolid(x, y)) walkable.push([x, y]);
 const floorTiles = walkable.filter(([x, y]) => !isDoorTile(x, y));
-const HIDE_SPOTS = [[1,1],[8,5],[11,7],[18,2],[1,18],[9,17],[12,18],[20,16],[27,18],[22,12],[1,12],[18,7],[27,6],[13,14]];
+const HIDE_SPOTS = MD.hideSpots.filter(([x, y]) => !isSolid(x, y));
+const PATROL_TILES = walkable.filter(([x, y]) => x >= MD.patrol[0] && x < MD.patrol[0] + MD.patrol[2] && y >= MD.patrol[1] && y < MD.patrol[1] + MD.patrol[3]);
 
 const NAMES = ['민준','서연','지호','하은','도윤','수아','예준','지우','시우','서윤'];
 const TOOL_KINDS = ['🔨','🪵','🔩'];
@@ -464,7 +666,9 @@ const DIFFS = {
   normal: { name:'보통',   mspd:1.0,  vision:9,  hear:2.2, food:1.0,  bash:9,  wake:8,  amb:0.1, react:[0.45, 0.9] },
   hard:   { name:'어려움', mspd:1.2,  vision:11, hear:2.8, food:1.35, bash:13, wake:5,  amb:0.045, react:[0.7, 1.2] },
 };
-let DIFF = DIFFS.normal;
+// 🧪 테스트 모드: 괴물 없음(영원히 잠듦) · 아주 밝음 · 배고픔/목마름 없음 · 공격 없음 · 친구들만
+DIFFS.test = { name:'테스트', mspd:1.0, vision:9, hear:2.2, food:0, bash:9, wake:Infinity, amb:1.3, react:[0.45, 0.9] };
+let DIFF = DIFFS.normal, TEST = false;
 const HUNGER_RATE = 100 / 150;
 const THIRST_RATE = 100 / 110;
 const BUILD_TIME = 2.2, BUILD_HP = 50, MAX_DOOR_HP = 100;
@@ -485,7 +689,7 @@ function reset() {
   const g = {
     t: 0, over: false,
     p: { x:15.5, y:9.5, r:0.3, crouch:false, z:0, vz:0, hidden:null, dir:0, step:0, tools:0, isPlayer:true, name:'나', shirt:'#2f6fd6', pants:'#2c3e50', hair:'#2b1d14', skin:'#f3cfa8' },
-    m: { x:3.5, y:15.5, r:0.35, state:'idle', dir:0, path:[], repath:0, target:null, tgt:null, last:null, searchT:0, wake:DIFF.wake, step:0, eat:0, bashing:-1, stun:0 },
+    m: { x:MD.monster[0], y:MD.monster[1], r:0.35, state:'idle', dir:0, path:[], repath:0, target:null, tgt:null, last:null, searchT:0, wake:DIFF.wake, step:0, eat:0, bashing:-1, stun:0 },
     hunger: 100, thirst: 100, hp: 100,
     use: 0, useTarget: null, flash: '', flashT: 0, beat: 0, seenT: 0,
     doors: DOOR_DEFS.map(([name, tiles]) => ({ name, tiles, hp:0, claim:null, warned:0 })),
@@ -540,7 +744,10 @@ function update(dt) {
   const door = nearDoor(p);
   // 서포터: 잡힌 친구 옆이면 구급상자로 살리기
   G.reviveF = (JOB === 'supporter' && G.kits > 0) ? G.friends.find(f => f.dead && dist(f, p) < 1.3) || null : null;
+  const hasGun = JOB === 'sentinel' && WEAPON === 'gun';
+  G.nearAmmo = !p.hidden && nearTile(AMMO_BOX.x, AMMO_BOX.y);
   G.useTarget = p.hidden ? null : nearTile(FRIDGE.x, FRIDGE.y) ? 'food' : nearTile(SINK.x, SINK.y) ? 'water'
+              : (G.nearAmmo && hasGun && G.ammo < GUN_AMMO) ? 'ammo'
               : G.reviveF ? 'revive'
               : (door && p.tools > 0 && door.hp < MAX_DOOR_HP) ? 'door' : null;
 
@@ -551,7 +758,7 @@ function update(dt) {
   hidePress = false;
 
   // 👁️ 25초 넘게 숨어 있으면: 지지직 → "나가" 3번 → 점프스케어 (체력 -25, 강제로 나가짐)
-  if (p.hidden) {
+  if (p.hidden && !TEST) {                 // 테스트 모드에선 공격 없음
     G.hideT += dt;
     if (G.hideT >= HAUNT_AT) {
       const n = 1 + Math.floor((G.hideT - HAUNT_AT) / HAUNT_GAP);
@@ -602,6 +809,7 @@ function update(dt) {
           flash(`💊 구급상자로 ${f.name}을(를) 살렸다! (남은 구급상자 ${G.kits})`); addLog(`💊 ${f.name}이(가) 다시 일어났다!`);
           beep(660, 0.12, 0.15); setTimeout(() => beep(990, 0.18, 0.15), 120);
         }
+        else if (G.useTarget === 'ammo') { G.ammo = GUN_AMMO; flash(`🎯 비비탄을 가득 채웠다! (🔫 ${GUN_AMMO}/${GUN_AMMO})`); beep(900, 0.08, 0.12, 'square'); setTimeout(() => beep(1300, 0.1, 0.12, 'square'), 90); }
         else if (G.useTarget === 'food') { G.hunger = Math.min(100, G.hunger + 40); flash('🍞 음식을 먹었다! (배고픔 +40)'); beep(520, 0.15, 0.15); }
         else if (G.useTarget === 'water') { G.thirst = Math.min(100, G.thirst + 45); flash('💧 물을 마셨다! (목마름 +45)'); beep(700, 0.15, 0.15); }
         else { G.useDoor.hp = Math.min(MAX_DOOR_HP, G.useDoor.hp + BUILD_HP); p.tools--; flash(`🚪 ${G.useDoor.name}을(를) 막았다!`); beep(300, 0.2, 0.2, 'square'); }
@@ -629,7 +837,7 @@ function update(dt) {
   G.calmFx -= Math.sign(G.calmFx) * Math.min(Math.abs(G.calmFx), dt);
 
   G.log.forEach(l => l.t -= dt); G.log = G.log.filter(l => l.t > 0);
-  if (G.t >= GAME_SECONDS) return end(true);
+  if (G.t >= GAME_SECONDS) { if (TEST) G.t -= GAME_SECONDS; else return end(true); }   // 테스트 모드는 끝없이
   if (G.flashT > 0) G.flashT -= dt;
 }
 
@@ -666,7 +874,7 @@ function jobSkill() {
 }
 // 서포터: 가지고 다니는 음식으로 배고픔 채우기
 function eatPack() {
-  if (G.food <= 0) return flash('🍱 가진 음식이 없어요 (부엌 냉장고에서 먹을 수 있어요)', 1.5);
+  if (G.food <= 0) return flash(`🍱 가진 음식이 없어요 (${MD.food.name}에서 먹을 수 있어요)`, 1.5);
   if (G.hunger >= 99) return flash('🍱 아직 배가 불러요', 1);
   G.food--; G.hunger = Math.min(100, G.hunger + 40);
   flash(`🍱 음식을 먹었다! (배고픔 +40 · 남은 음식 ${G.food})`); beep(520, 0.15, 0.15);
@@ -825,7 +1033,7 @@ function updateFriend(f, dt) {
 
 // ---------- Monster ----------
 function pickPatrol() {
-  if (Math.random() < 0.25) return [22 + Math.floor(Math.random() * 6), 2 + Math.floor(Math.random() * 5)]; // 부엌 자주 순찰
+  if (Math.random() < 0.25 && PATROL_TILES.length) return pick(PATROL_TILES); // 음식 있는 곳 자주 순찰
   return pick(walkable);
 }
 
@@ -1278,7 +1486,7 @@ function eatenSounds(g) {
 }
 
 // 괴물 실루엣: (x, y)=발 위치, s=키. arm=팔 각도(0 아래 ~ π 위), jaw=입 벌림 0~1
-function monsterSil(c, x, y, s, arm, jaw, t) {
+function monsterSil(c, x, y, s, arm, jaw, t, back = false) {
   const sil = '#050102';
   c.fillStyle = sil; c.strokeStyle = sil; c.lineCap = 'round';
   // 다리
@@ -1319,7 +1527,7 @@ function monsterSil(c, x, y, s, arm, jaw, t) {
   c.restore();
   // 빨간 눈
   c.save(); c.shadowColor = '#ff0000'; c.shadowBlur = s * 0.05; c.fillStyle = '#ff3a2a';
-  for (const ex of [-0.55, -0.15]) { c.beginPath(); c.ellipse(hx + ex * hr, hy - hr * 0.3, hr * 0.13, hr * 0.07, -0.2, 0, 7); c.fill(); }
+  if (!back) for (const ex of [-0.55, -0.15]) { c.beginPath(); c.ellipse(hx + ex * hr, hy - hr * 0.3, hr * 0.13, hr * 0.07, -0.2, 0, 7); c.fill(); }
   c.restore();
   // 앞쪽 팔 (사람을 들어 올림) → 손 위치 반환
   const shx = x - s * 0.2, shy = y - s * 0.85, L = s * 0.55;
@@ -1356,7 +1564,7 @@ function drawEaten(e) {
     c.fillStyle = '#000'; c.fillRect(0, 0, w, h);
     c.save(); c.translate(w / 2, h / 2); c.rotate(Math.sin(e * 9) * 0.12 + 0.25); c.translate(-w / 2, -h / 2 + Math.sin(e * 23) * S * 0.02);
     const vy = h * 0.3;
-    c.fillStyle = '#2a1a10'; c.beginPath(); c.moveTo(w * 0.45, vy); c.lineTo(w * 0.55, vy); c.lineTo(w * 1.6, h * 1.2); c.lineTo(-w * 0.6, h * 1.2); c.fill();
+    c.fillStyle = END.drag; c.beginPath(); c.moveTo(w * 0.45, vy); c.lineTo(w * 0.55, vy); c.lineTo(w * 1.6, h * 1.2); c.lineTo(-w * 0.6, h * 1.2); c.fill();
     c.strokeStyle = 'rgba(0,0,0,.6)'; c.lineWidth = 2;
     for (let i = -8; i <= 8; i++) { c.beginPath(); c.moveTo(w / 2 + i * w * 0.012, vy); c.lineTo(w / 2 + i * w * 0.2, h * 1.2); c.stroke(); }
     for (let k = 0; k < 14; k++) {                                                  // 앞으로 흘러가는 판자 이음새
@@ -1392,8 +1600,11 @@ function drawEaten(e) {
   fx = (Math.random() - .5) * S * 0.05 * chewK; fy = (Math.random() - .5) * S * 0.05 * chewK;
   const focusX = gx - s * 0.1, focusY = gy - s * 1.05;
   c.translate(focusX + fx, focusY + fy); c.scale(zoom, zoom); c.translate(-focusX, -focusY);   // 머리를 중심으로 확대
-  // 창문 + 붉은 달
+  // 맵마다 다른 배경 (집이 아니면 붉게 물든 맵 배경)
+  if (END.deco !== 'window') { drawDeco(c, w, h, gy, s, END.deco, t, 0); c.fillStyle = 'rgba(110,0,0,.42)'; c.fillRect(-w, -h, w * 3, h * 3); }
+  // 창문 + 붉은 달 (집)
   const ww = s * 0.95, wh = s * 1.2, wx = Math.min(w - ww / 2 - 10, gx + s * 0.25), wy = Math.max(10, gy - s * 1.75);
+  if (END.deco === 'window') {
   c.fillStyle = '#4a0a0c'; c.fillRect(wx - ww / 2, wy, ww, wh);
   const moon = c.createRadialGradient(wx + ww * 0.12, wy + wh * 0.32, 1, wx + ww * 0.12, wy + wh * 0.32, ww * 0.42);
   moon.addColorStop(0, '#ffb39a'); moon.addColorStop(0.35, '#e0402a'); moon.addColorStop(1, 'rgba(120,0,0,0)');
@@ -1401,6 +1612,7 @@ function drawEaten(e) {
   c.fillStyle = '#050102'; c.fillRect(wx - ww / 2 - 8, wy - 8, ww + 16, 10); c.fillRect(wx - ww / 2 - 8, wy + wh - 2, ww + 16, 10);
   c.fillRect(wx - 4, wy, 8, wh); c.fillRect(wx - ww / 2, wy + wh / 2 - 4, ww, 8);
   c.fillRect(wx - ww / 2 - 8, wy, 10, wh); c.fillRect(wx + ww / 2 - 2, wy, 10, wh);
+  }
   // 바닥
   c.fillStyle = '#080102'; c.fillRect(-w, gy, w * 3, h);
   // 팔 각도 / 입 벌림
@@ -1455,21 +1667,466 @@ function drawEaten(e) {
   if (t > EAT.fade) {
     const k = Math.min(1, (t - EAT.fade) / 0.6);
     c.fillStyle = `rgba(0,0,0,${k})`; c.fillRect(0, 0, w, h);
-    if (k >= 1 && t < EATEN_TIME - 0.5) {
+    const tk = Math.min(1, Math.max(0, (t - EAT.fade - 0.5) / 0.6));
+    if (END.epi && tk > 0) {
+      // 맵별 마지막 장면: 묘지 = 내 이름이 새겨진 새 묘비 / 교회 = 하나 더 늘어난 관
+      c.save(); c.globalAlpha = tk; const ex = w / 2, ey = h * 0.4, es = S * 0.16;
+      c.fillStyle = 'rgba(160,20,20,.25)'; c.beginPath(); c.ellipse(ex, ey + es * 0.05, es * 1.6, es * 0.25, 0, 0, 7); c.fill();
+      if (END.epi === 'tomb') {
+        c.fillStyle = '#6a6a70'; c.beginPath(); c.moveTo(ex - es * 0.55, ey); c.lineTo(ex - es * 0.55, ey - es * 0.9); c.arc(ex, ey - es * 0.9, es * 0.55, Math.PI, 0); c.lineTo(ex + es * 0.55, ey); c.fill();
+        c.fillStyle = '#2a2a2e'; c.textAlign = 'center'; c.font = `900 ${Math.round(es * 0.28)}px sans-serif`; c.fillText('R.I.P', ex, ey - es * 0.95);
+        c.font = `900 ${Math.round(es * 0.34)}px "Malgun Gothic",sans-serif`; c.fillText('나', ex, ey - es * 0.45);
+      } else {
+        for (const [ox, a] of [[-es * 1.3, 0.5], [es * 1.3, 0.5], [0, 1]]) {
+          c.globalAlpha = tk * a; c.fillStyle = a === 1 ? '#5a3420' : '#3a2418';
+          c.beginPath(); c.moveTo(ex + ox - es * 0.25, ey - es * 1.0); c.lineTo(ex + ox + es * 0.25, ey - es * 1.0); c.lineTo(ex + ox + es * 0.4, ey - es * 0.65); c.lineTo(ex + ox + es * 0.25, ey); c.lineTo(ex + ox - es * 0.25, ey); c.lineTo(ex + ox - es * 0.4, ey - es * 0.65); c.fill();
+          c.fillStyle = '#b09060'; c.fillRect(ex + ox - es * 0.03, ey - es * 0.85, es * 0.06, es * 0.4); c.fillRect(ex + ox - es * 0.13, ey - es * 0.72, es * 0.26, es * 0.06);
+        }
+      }
+      c.restore(); c.textAlign = 'left';
+    } else if (k >= 1 && t < EATEN_TIME - 0.5) {
       c.save(); c.shadowColor = '#f00'; c.shadowBlur = 20; c.fillStyle = '#ff2a1a';
       for (const sx of [-1, 1]) { c.beginPath(); c.ellipse(w / 2 + sx * S * 0.07, h * 0.3, S * 0.03, S * 0.012, -sx * 0.25, 0, 7); c.fill(); }
       c.restore();
     }
-    const tk = Math.min(1, Math.max(0, (t - EAT.fade - 0.5) / 0.6));
     if (tk > 0) {
-      c.globalAlpha = tk * (Math.random() < 0.08 ? 0.3 : 1);
-      c.font = `900 ${Math.round(S * 0.075)}px "Malgun Gothic",sans-serif`; c.textAlign = 'center';
-      c.fillStyle = '#b00010'; c.fillText('당신은 괴물에게 먹혔습니다…', w / 2 + (Math.random() - .5) * 4, h * 0.55);
-      c.font = `${Math.round(S * 0.028)}px "Malgun Gothic",sans-serif`; c.fillStyle = '#777';
-      c.fillText('(클릭하거나 아무 키나 누르면 넘어가요)', w / 2, h * 0.55 + S * 0.08);
+      c.globalAlpha = tk * (Math.random() < 0.08 ? 0.3 : 1); c.textAlign = 'center';
+      c.fillStyle = '#b00010'; fitText(c, END.fail, w / 2 + (Math.random() - .5) * 4, h * 0.55, S * 0.075, w * 0.92);
+      c.fillStyle = '#777'; fitText(c, '(클릭하거나 아무 키나 누르면 넘어가요)', w / 2, h * 0.55 + S * 0.08, S * 0.028, w * 0.92, '400');
       c.globalAlpha = 1; c.textAlign = 'left';
     }
   }
+}
+
+// ---------- 🎬 맵마다 다른 엔딩 ----------
+// type: 'swat' = 특공대 진입 엔딩 / 'light' = 아침 빛에 괴물이 사라지는 엔딩
+// deco: 엔딩 장면 배경 · melt: 빛 엔딩에서 괴물이 사라지는 방식 · epi: 실패 엔딩 마지막에 남는 것
+const END = ({
+  house:    { deco:'window',   type:'swat', vest:'POLICE', drag:'#2a1a10', shout:'경찰 특공대다! 움직이지 마!', clear:'목표 제압! 생존자 확보!',
+              win:'새벽 6시, 경찰 특공대가 출동해 괴물을 처치했습니다', fail:'당신은 괴물에게 먹혔습니다…' },
+  ship:     { deco:'porthole', type:'swat', vest:'해경', heli:true, drag:'#2a2d33', shout:'해양경찰이다! 움직이지 마!', clear:'괴물 제압! 승객 전원 구조!',
+              win:'새벽 6시, 해양경찰 특공대가 배에 올라 괴물을 처치했습니다', fail:'당신은 먹혔고, 배는 어둠 속을 떠돌았습니다…' },
+  factory:  { deco:'pipes',    type:'swat', vest:'ARMY', drag:'#2b2b2b', shout:'특수부대다! 모두 엎드려!', clear:'목표 제거! 공장 확보!',
+              win:'새벽 6시, 군 특수부대가 공장에 진입해 괴물을 처치했습니다', fail:'멈췄던 공장 기계가 다시 돌아가기 시작했습니다…' },
+  forest:   { deco:'trees',    type:'light', melt:'ash',   drag:'#1c2a14', clear:'아침 해가 숲을 비춘다!',
+              win:'아침 해가 숲을 비추자 괴물이 재가 되어 흩어졌습니다', fail:'숲은 다시 조용해졌습니다… 당신은 돌아오지 못했습니다' },
+  cemetery: { deco:'tombs',    type:'light', melt:'stone', drag:'#1e2418', clear:'첫 햇살이 묘지에 닿았다!', epi:'tomb',
+              win:'첫 햇살을 맞은 괴물이 돌이 되어 부서졌습니다', fail:'새 묘비에 당신의 이름이 새겨졌습니다…' },
+  church:   { deco:'stained',  type:'light', melt:'holy',  drag:'#2a2620', clear:'새벽 종소리가 울린다!', epi:'coffin',
+              win:'새벽 종소리와 성스러운 빛이 괴물을 몰아냈습니다', fail:'지하 묘실에 관이 하나 더 늘었습니다…' },
+})[MAP_ID];
+const mixc = (a, b, k) => `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * Math.max(0, Math.min(1, k)))).join(',')})`;
+// 글자가 화면 폭을 넘지 않게 크기 맞추기
+function fitText(c, text, x, y, size, maxW, weight = '900') {
+  c.font = `${weight} ${Math.round(size)}px "Malgun Gothic",sans-serif`;
+  const mw = c.measureText(text).width;
+  if (mw > maxW) c.font = `${weight} ${Math.round(size * maxW / mw)}px "Malgun Gothic",sans-serif`;
+  c.fillText(text, x, y);
+}
+
+// 엔딩 장면 배경 (sun: 0 = 밤 ~ 1 = 아침)
+function drawDeco(c, w, h, gy, s, kind, e, sun = 0) {
+  const S = Math.min(w, h), r = seeded(55);
+  if (kind === 'trees' || kind === 'tombs') {                 // ── 바깥: 하늘 + 땅
+    const hz = gy - s * 0.35;
+    const sky = c.createLinearGradient(0, 0, 0, hz);
+    sky.addColorStop(0, mixc([6, 10, 24], [110, 160, 220], sun)); sky.addColorStop(0.7, mixc([12, 18, 38], [255, 190, 120], sun)); sky.addColorStop(1, mixc([20, 26, 46], [255, 236, 200], sun));
+    c.fillStyle = sky; c.fillRect(-w, -h, w * 3, hz + h);
+    if (sun < 1) { c.globalAlpha = 1 - sun; c.fillStyle = '#e8e2c8'; c.beginPath(); c.arc(w * 0.18, h * 0.14, S * 0.05, 0, 7); c.fill(); c.globalAlpha = 1; }
+    if (sun > 0) { const sg = c.createRadialGradient(w * 0.8, hz, 2, w * 0.8, hz, S * 0.7); sg.addColorStop(0, `rgba(255,252,232,${sun})`); sg.addColorStop(0.2, `rgba(255,220,150,${0.8 * sun})`); sg.addColorStop(1, 'rgba(255,190,120,0)'); c.fillStyle = sg; c.fillRect(-w, -h, w * 3, h * 3); }
+    c.fillStyle = kind === 'trees' ? mixc([8, 14, 8], [58, 82, 42], sun * 0.8) : mixc([12, 14, 12], [70, 82, 60], sun * 0.8); c.fillRect(-w, hz, w * 3, h * 2);
+    if (kind === 'trees') {
+      const far = mixc([4, 9, 6], [36, 58, 34], sun * 0.6), near = mixc([2, 4, 3], [26, 22, 16], sun * 0.5);
+      c.fillStyle = far;
+      for (let i = 0; i < 16; i++) { const x = (i / 15) * w * 1.2 - w * 0.1, th = s * (0.6 + r() * 0.5); c.beginPath(); c.moveTo(x - s * 0.18, hz + s * 0.05); c.lineTo(x, hz - th); c.lineTo(x + s * 0.18, hz + s * 0.05); c.fill(); }
+      c.fillStyle = near;
+      for (const fx of [0.04, 0.27, 0.66, 0.93]) {
+        c.fillRect(w * fx - s * 0.05, -h, s * 0.1, gy + h);
+        for (let k = 0; k < 4; k++) { c.beginPath(); c.arc(w * fx + (r() - .5) * s * 0.5, -s * 0.05 + r() * s * 0.3, s * (0.2 + r() * 0.15), 0, 7); c.fill(); }
+      }
+    } else {
+      const ink = mixc([16, 18, 22], [110, 110, 116], sun * 0.7);
+      c.fillStyle = ink; c.fillRect(-w, hz - s * 0.22, w * 3, s * 0.02);           // 철 울타리
+      for (let x = 0; x < w; x += w / 36) { c.fillRect(x, hz - s * 0.26, s * 0.012, s * 0.28); }
+      c.strokeStyle = ink; c.lineWidth = s * 0.03; c.lineCap = 'round';              // 앙상한 나무
+      c.beginPath(); c.moveTo(w * 0.1, gy); c.lineTo(w * 0.1, gy - s * 1.2); c.lineTo(w * 0.04, gy - s * 1.6); c.moveTo(w * 0.1, gy - s * 1.0); c.lineTo(w * 0.2, gy - s * 1.5); c.moveTo(w * 0.15, gy - s * 1.3); c.lineTo(w * 0.17, gy - s * 1.7); c.stroke();
+      for (let i = 0; i < 9; i++) {                                                   // 묘비들
+        const x = w * (0.05 + i * 0.113) + (r() - .5) * s * 0.1, depth = r(), y = lerpN(hz + s * 0.03, gy - s * 0.02, depth), sz = s * (0.16 + depth * 0.14);
+        c.fillStyle = mixc([20, 22, 26], [128, 128, 134], sun * 0.7);
+        if (i % 3 === 1) { c.fillRect(x - sz * 0.08, y - sz * 1.4, sz * 0.16, sz * 1.4); c.fillRect(x - sz * 0.4, y - sz * 1.1, sz * 0.8, sz * 0.16); }
+        else { c.beginPath(); c.moveTo(x - sz * 0.4, y); c.lineTo(x - sz * 0.4, y - sz * 0.8); c.arc(x, y - sz * 0.8, sz * 0.4, Math.PI, 0); c.lineTo(x + sz * 0.4, y); c.fill(); }
+      }
+    }
+    return;
+  }
+  if (kind === 'porthole') {                                  // ── 배 안: 둥근 창 + 파이프 + 구명환
+    c.fillStyle = 'rgba(0,0,0,.25)'; for (let x = 0; x < w; x += S * 0.28) c.fillRect(x, 0, 2, gy);
+    for (let i = 0; i < 3; i++) {
+      const px = w * (0.16 + i * 0.24), py = gy - s * 1.3, rr2 = s * 0.17;
+      c.fillStyle = '#2a2e33'; c.beginPath(); c.arc(px, py, rr2 * 1.3, 0, 7); c.fill();
+      c.fillStyle = '#4a5058'; c.beginPath(); c.arc(px, py, rr2 * 1.12, 0, 7); c.fill();
+      c.save(); c.beginPath(); c.arc(px, py, rr2, 0, 7); c.clip();
+      const g2 = c.createLinearGradient(0, py - rr2, 0, py + rr2); g2.addColorStop(0, mixc([10, 18, 40], [255, 200, 140], sun)); g2.addColorStop(0.55, mixc([16, 24, 50], [255, 230, 190], sun)); g2.addColorStop(0.56, mixc([4, 10, 24], [70, 120, 170], sun)); g2.addColorStop(1, mixc([2, 6, 16], [40, 80, 130], sun));
+      c.fillStyle = g2; c.fillRect(px - rr2, py - rr2, rr2 * 2, rr2 * 2);
+      c.fillStyle = `rgba(255,240,200,${0.25 + 0.4 * sun})`; c.fillRect(px - rr2 * 0.1, py + rr2 * 0.1, rr2 * 0.2, rr2 * 0.6 * (0.6 + Math.sin(e * 3 + i) * 0.4));
+      c.restore();
+      c.fillStyle = '#7a8088'; for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; c.beginPath(); c.arc(px + Math.cos(a) * rr2 * 1.2, py + Math.sin(a) * rr2 * 1.2, s * 0.012, 0, 7); c.fill(); }
+    }
+    c.fillStyle = '#30353b'; c.fillRect(-w, gy - s * 1.78, w * 3, s * 0.07); c.fillRect(w * 0.035, gy - s * 1.78, s * 0.06, s * 1.78);
+    c.lineWidth = s * 0.045; c.strokeStyle = '#e06020'; c.beginPath(); c.arc(w * 0.9, gy - s * 0.9, s * 0.12, 0, 7); c.stroke();
+    c.strokeStyle = '#f2f2f2'; for (let k = 0; k < 4; k++) { c.beginPath(); c.arc(w * 0.9, gy - s * 0.9, s * 0.12, k * Math.PI / 2, k * Math.PI / 2 + 0.35); c.stroke(); }
+    return;
+  }
+  if (kind === 'pipes') {                                     // ── 공장: 높은 창, 큰 파이프, 철제 난간, 기계
+    for (let i = 0; i < 6; i++) { const x = w * (0.05 + i * 0.16), y = h * 0.05; c.fillStyle = mixc([14, 20, 36], [255, 210, 150], sun); c.fillRect(x, y, S * 0.12, S * 0.08); c.fillStyle = '#15171a'; c.fillRect(x + S * 0.058, y, S * 0.006, S * 0.08); c.fillRect(x, y + S * 0.038, S * 0.12, S * 0.006); }
+    c.fillStyle = '#3a3f46'; c.fillRect(-w, gy - s * 1.55, w * 3, s * 0.1); c.fillRect(-w, gy - s * 1.33, w * 3, s * 0.05);
+    c.fillStyle = '#2a2e33'; for (let x = 0; x < w; x += w * 0.12) c.fillRect(x, gy - s * 1.57, s * 0.04, s * 0.14);
+    c.fillStyle = '#353a40'; c.fillRect(w * 0.3, gy - s * 1.5, s * 0.07, s * 1.5);
+    c.fillStyle = '#1c1f23'; c.fillRect(-w, gy - s * 1.0, w * 3, s * 0.025); for (let x = 0; x < w; x += w * 0.06) c.fillRect(x, gy - s * 1.0, s * 0.015, s * 0.3);
+    c.fillStyle = '#202328'; c.fillRect(w * 0.01, gy - s * 0.9, s * 0.5, s * 0.9);
+    c.fillStyle = Math.floor(e * 2) % 2 ? '#ff3a2a' : '#5a1010'; c.beginPath(); c.arc(w * 0.01 + s * 0.4, gy - s * 0.78, s * 0.025, 0, 7); c.fill();
+    for (let x = -w; x < w * 2; x += s * 0.16) { c.fillStyle = (Math.floor(x / (s * 0.08)) % 2) ? '#d8b020' : '#151515'; c.fillRect(x, gy - s * 0.04, s * 0.08, s * 0.04); }
+    return;
+  }
+  if (kind === 'stained') {                                   // ── 교회: 아치형 스테인드글라스 + 기둥 + 긴 의자
+    const ww = s * 0.7, wh = s * 1.5, wx = w * 0.5 - ww / 2, wy = Math.max(8, gy - s * 2.0);
+    c.save(); c.beginPath(); c.moveTo(wx, wy + wh); c.lineTo(wx, wy + ww / 2); c.arc(wx + ww / 2, wy + ww / 2, ww / 2, Math.PI, 0); c.lineTo(wx + ww, wy + wh); c.closePath(); c.clip();
+    const pal = ['#b8202a', '#1f4fb0', '#e0b020', '#2a8a3a', '#7a2a9a', '#1f4fb0'];
+    c.globalAlpha = 0.3 + 0.7 * sun;
+    for (let j = 0; j < 10; j++) for (let i = 0; i < 6; i++) { c.fillStyle = pal[(i * 3 + j * 2) % pal.length]; c.fillRect(wx + i * ww / 6, wy + j * wh / 10, ww / 6, wh / 10); }
+    c.globalAlpha = 1; c.strokeStyle = '#140c08'; c.lineWidth = s * 0.012;
+    for (let i = 1; i < 6; i++) { c.beginPath(); c.moveTo(wx + i * ww / 6, wy); c.lineTo(wx + i * ww / 6, wy + wh); c.stroke(); }
+    for (let j = 1; j < 10; j++) { c.beginPath(); c.moveTo(wx, wy + j * wh / 10); c.lineTo(wx + ww, wy + j * wh / 10); c.stroke(); }
+    c.restore();
+    c.strokeStyle = '#140c08'; c.lineWidth = s * 0.04; c.beginPath(); c.moveTo(wx, wy + wh); c.lineTo(wx, wy + ww / 2); c.arc(wx + ww / 2, wy + ww / 2, ww / 2, Math.PI, 0); c.lineTo(wx + ww, wy + wh); c.stroke();
+    c.fillStyle = mixc([30, 26, 22], [150, 140, 120], sun * 0.7);
+    for (const px of [w * 0.12, w * 0.88]) { c.fillRect(px - s * 0.08, gy - s * 2.2, s * 0.16, s * 2.2); c.fillRect(px - s * 0.12, gy - s * 1.9, s * 0.24, s * 0.06); }
+    c.fillStyle = mixc([20, 12, 8], [90, 60, 36], sun * 0.6);
+    for (const [px, pw] of [[w * 0.02, w * 0.22], [w * 0.76, w * 0.22]]) { c.fillRect(px, gy - s * 0.38, pw, s * 0.06); c.fillRect(px, gy - s * 0.2, pw, s * 0.04); }
+  }
+}
+const lerpN = (a, b, k) => a + (b - a) * k;
+
+// ---------- ✨ 빛 엔딩 (숲·묘지·교회): 아침 빛에 괴물이 재 / 돌 / 빛이 되어 사라짐 ----------
+const LIGHT = { clock: 0.3, glow: 0.8, recoil: 2.0, crack: 3.8, burst: 5.6, clear: 6.2, text: 9.0 };
+const ocv = document.createElement('canvas'), octx = ocv.getContext('2d');
+function lightSounds(g) {
+  const at = (t, fn) => setTimeout(() => { if (G === g && !g.skipped) fn(); }, t * 1000);
+  if (END.deco === 'stained') [0.3, 1.4, 2.5].forEach(t => at(t, () => { beep(196, 2.2, 0.22); beep(392, 1.6, 0.08); beep(587, 1.0, 0.04); }));   // 교회 종
+  else at(LIGHT.clock, () => { beep(784, 1.0, 0.15); beep(1568, 0.7, 0.05); });
+  if (END.deco === 'trees') for (let i = 0; i < 8; i++) at(1.2 + i * 0.5 + Math.random() * 0.2, () => { beep(2600 + Math.random() * 900, 0.06, 0.05); setTimeout(() => beep(3200 + Math.random() * 700, 0.05, 0.04), 80); });
+  if (END.deco === 'tombs') [1.0, 1.8].forEach(t => at(t, () => sweep('sawtooth', 900, 600, 0.25, 0.05)));          // 까마귀
+  at(LIGHT.recoil, () => { sweep('sawtooth', 300, 650, 0.9, 0.25); sweep('sawtooth', 150, 80, 1.5, 0.25); });
+  for (let t = LIGHT.crack; t < LIGHT.burst; t += 0.18) at(t, () => noiseHit(0.08, 0.25, END.melt === 'stone' ? 1200 : 4000, END.melt === 'stone' ? 'lowpass' : 'highpass'));
+  at(LIGHT.burst, () => {
+    if (END.melt === 'stone') { crunch(1.3); beep(40, 1.0, 0.6, 'sine'); for (let k = 0; k < 8; k++) setTimeout(() => noiseHit(0.05, 0.3, 2000), 200 + k * 90); }
+    else if (END.melt === 'ash') { noiseHit(1.6, 0.5, 900); beep(60, 0.8, 0.4, 'sawtooth'); }
+    else { [880, 1175, 1318, 1760].forEach((f, i) => setTimeout(() => beep(f, 1.2, 0.1), i * 90)); noiseHit(1.0, 0.2, 6000, 'highpass'); }
+  });
+  at(LIGHT.text, () => { [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep(f, 1.8, 0.12), i * 110)); });
+}
+function drawLightEnd(e) {
+  const [w, h] = fitScare(), c = scCtx, S = Math.min(w, h), L = LIGHT;
+  c.globalAlpha = 1; c.shadowBlur = 0; c.globalCompositeOperation = 'source-over'; c.textAlign = 'left';
+  const cl = v => Math.max(0, Math.min(1, v));
+  const s = Math.min(w * 0.42, h * 0.5), gy = h * (h > w ? 0.78 : 0.9);
+  const sun = cl((e - L.glow) / 3.0), melt = cl((e - L.crack) / (L.burst - L.crack)), pain = cl((e - L.recoil) / 1.2), tb = e - L.burst;
+  G.eatShake = tb > 0 && tb < 0.5 ? 1 - tb / 0.5 : (melt > 0 && tb < 0 ? 0.2 : 0);
+  const shx = (Math.random() - .5) * S * 0.04 * G.eatShake, shy = (Math.random() - .5) * S * 0.04 * G.eatShake;
+  c.save(); c.translate(shx, shy);
+  if (END.deco === 'stained') { c.fillStyle = mixc([14, 10, 10], [110, 92, 70], sun); c.fillRect(-20, -20, w + 40, h + 40); }
+  drawDeco(c, w, h, gy, s, END.deco, e, sun);
+  if (END.deco === 'stained') { c.fillStyle = mixc([8, 6, 5], [70, 56, 40], sun); c.fillRect(-20, gy, w + 40, h); }
+  const mx = w * 0.42;
+  // 빛줄기
+  if (sun > 0) {
+    c.globalCompositeOperation = 'lighter';
+    if (END.deco === 'stained') {
+      const cols = ['255,60,60', '80,120,255', '255,210,60', '90,220,110'], wx = w * 0.5, wy = Math.max(8, gy - s * 2.0) + s * 0.9;
+      cols.forEach((col, i) => { c.fillStyle = `rgba(${col},${0.2 * sun})`; c.beginPath(); c.moveTo(wx - s * 0.3 + i * s * 0.18, wy); c.lineTo(wx - s * 0.12 + i * s * 0.18, wy); c.lineTo(mx + s * (0.2 + i * 0.12), gy); c.lineTo(mx - s * (0.4 - i * 0.12), gy); c.fill(); });
+    } else {
+      const sx = w * 0.8, sy = gy - s * 0.35;
+      for (let i = 0; i < 6; i++) { const a = Math.PI + 0.12 + i * 0.07 + Math.sin(e + i) * 0.01; c.fillStyle = `rgba(255,225,160,${0.12 * sun})`; c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx + Math.cos(a - 0.025) * w * 1.2, sy + Math.sin(a - 0.025) * w * 1.2 + s * 0.4); c.lineTo(sx + Math.cos(a + 0.025) * w * 1.2, sy + Math.sin(a + 0.025) * w * 1.2 + s * 0.4); c.fill(); }
+    }
+    c.globalCompositeOperation = 'source-over';
+  }
+  // 괴물 (빛 쪽 = 오른쪽을 보며 괴로워함) → 금이 가며 색이 변함 → 터져 사라짐
+  if (tb < 0) {
+    if (ocv.width !== w || ocv.height !== h) { ocv.width = w; ocv.height = h; } else octx.clearRect(0, 0, w, h);
+    const jx = (Math.random() - .5) * s * 0.05 * pain * (END.melt === 'stone' ? 1 - melt : 1);
+    octx.save(); octx.translate(mx + jx, 0); octx.scale(-1, 1);
+    monsterSil(octx, 0, gy, s, 0.4 + pain * 1.9, pain * (END.melt === 'stone' ? 0.6 * (1 - melt) : 0.7), e * (END.melt === 'stone' ? 1 - melt * 0.9 : 1));
+    octx.restore();
+    if (melt > 0) {
+      octx.globalCompositeOperation = 'source-atop';
+      octx.fillStyle = END.melt === 'stone' ? `rgba(138,138,134,${melt})` : END.melt === 'ash' ? `rgba(58,42,34,${melt})` : `rgba(255,246,216,${melt * 0.9})`;
+      octx.fillRect(0, 0, w, h);
+      const rr3 = seeded(9); octx.lineWidth = s * 0.012; octx.lineCap = 'round';
+      octx.strokeStyle = END.melt === 'stone' ? '#2a2a2a' : END.melt === 'ash' ? '#ff8a30' : '#ffffff';
+      for (let i = 0; i < 12; i++) {
+        let x = mx + (rr3() - .5) * s * 0.3, y = gy - s * (0.3 + rr3() * 0.9); octx.beginPath(); octx.moveTo(x, y);
+        for (let k = 0; k < 5 * melt; k++) { x += (rr3() - .5) * s * 0.14; y += (rr3() - .5) * s * 0.14; octx.lineTo(x, y); } octx.stroke();
+      }
+      octx.globalCompositeOperation = 'source-over';
+    }
+    if (END.melt !== 'stone' && melt > 0) { c.save(); c.shadowColor = END.melt === 'ash' ? '#ff7a20' : '#fff6d0'; c.shadowBlur = s * 0.15 * melt; c.drawImage(ocv, 0, 0); c.restore(); }
+    else c.drawImage(ocv, 0, 0);
+    if (pain > 0 && END.melt !== 'stone') {                     // 연기
+      const r = seeded(77);
+      for (let i = 0; i < 22; i++) { const ph = (e * (0.5 + r() * 0.6) + r()) % 1; c.fillStyle = `rgba(210,200,180,${(1 - ph) * 0.3 * pain})`; c.beginPath(); c.arc(mx + (r() - .5) * s * 0.55, gy - s * (0.5 + r() * 0.6) - ph * s * 0.9, s * (0.03 + r() * 0.05) * (0.5 + ph), 0, 7); c.fill(); }
+    }
+  } else {
+    // 터진 뒤: 재가 날아오름 / 돌 조각이 떨어져 쌓임 / 빛 알갱이가 솟아오름
+    const r = seeded(123), n = END.melt === 'stone' ? 46 : 90;
+    for (let i = 0; i < n; i++) {
+      const x0 = mx + (r() - .5) * s * 0.55, y0 = gy - s * (0.1 + r() * 1.25), vx = (r() - .5) * s * 0.9, vy = r(), sz = s * (0.008 + r() * 0.02);
+      if (END.melt === 'stone') {
+        const t = tb, x = x0 + vx * t * 0.6, y = Math.min(gy - sz, y0 - s * 0.5 * vy * t + s * 3 * t * t);
+        c.fillStyle = r() > 0.5 ? '#7c7c78' : '#5e5e5a'; c.save(); c.translate(x, y); c.rotate(y >= gy - sz - 1 ? i : t * 6 + i); c.fillRect(-sz * 1.6, -sz * 1.6, sz * 3.2, sz * 3.2); c.restore();
+      } else {
+        const fade = Math.max(0, 1 - tb / 3), x = x0 + vx * tb * 0.8 + Math.sin(tb * 3 + i) * s * 0.03, y = y0 - s * (0.3 + vy * 0.6) * tb * (END.melt === 'holy' ? 1.6 : 1);
+        c.fillStyle = END.melt === 'holy' ? (i % 3 ? `rgba(255,250,220,${fade})` : `rgba(255,214,90,${fade})`) : (i % 5 ? `rgba(40,34,30,${fade})` : `rgba(255,140,40,${fade})`);
+        c.beginPath(); c.arc(x, y, sz * (END.melt === 'holy' ? 0.7 + Math.random() * 0.6 : 1), 0, 7); c.fill();
+      }
+    }
+    if (END.melt === 'stone' && tb < 1.4) { c.fillStyle = `rgba(150,145,135,${0.45 * (1 - tb / 1.4)})`; for (let k = 0; k < 6; k++) { c.beginPath(); c.arc(mx + (k - 2.5) * s * 0.12, gy - s * 0.1, s * (0.15 + tb * 0.3), 0, 7); c.fill(); } }
+    const fl = END.melt === 'holy' ? 0.7 : END.melt === 'ash' ? 0.35 : 0;
+    if (tb < fl) { c.fillStyle = END.melt === 'holy' ? `rgba(255,252,235,${1 - tb / fl})` : `rgba(255,150,60,${0.6 * (1 - tb / fl)})`; c.fillRect(-20, -20, w + 40, h + 40); }
+  }
+  c.restore();
+  // 글씨
+  const say = (txt, y, size, col, a) => { c.globalAlpha = a; c.textAlign = 'center'; c.lineWidth = size * 0.14; c.strokeStyle = 'rgba(0,0,0,.75)'; c.font = `900 ${Math.round(size)}px "Malgun Gothic",sans-serif`; c.strokeText(txt, w / 2, y); c.fillStyle = col; fitText(c, txt, w / 2, y, size, w * 0.92); c.globalAlpha = 1; c.textAlign = 'left'; };
+  if (e > L.clock && e < L.recoil + 0.4) say('06:00 AM', h * 0.42, S * 0.12, '#fff3c4', cl((e - L.clock) / 0.4) * cl((L.recoil + 0.4 - e) / 0.4));
+  if (e > L.clear && e < L.text + 0.3) say(END.clear, h * 0.2, S * 0.06, '#fff2a8', cl((e - L.clear) / 0.3));
+  drawWinScreen(c, w, h, S, e, L.text);
+}
+// 마지막 "살아남았다!" 화면 (특공대·빛 엔딩 공통)
+function drawWinScreen(c, w, h, S, e, t0) {
+  if (e <= t0) return;
+  const k = Math.max(0, Math.min(1, (e - t0) / 0.8));
+  c.fillStyle = `rgba(255,246,222,${0.88 * k})`; c.fillRect(0, 0, w, h);
+  const tk = Math.max(0, Math.min(1, (e - t0 - 0.3) / 0.6));
+  if (tk <= 0) return;
+  c.globalAlpha = tk; c.textAlign = 'center';
+  c.fillStyle = '#3d8a3d'; fitText(c, '살아남았다!', w / 2, h * 0.45, S * 0.11, w * 0.9);
+  c.fillStyle = '#4a4a6a'; fitText(c, END.win, w / 2, h * 0.45 + S * 0.08, S * 0.035, w * 0.92, '400');
+  c.fillStyle = '#998'; fitText(c, '(클릭하거나 아무 키나 누르면 넘어가요)', w / 2, h * 0.45 + S * 0.15, S * 0.026, w * 0.92, '400');
+  c.globalAlpha = 1; c.textAlign = 'left';
+}
+
+// ---------- 🚓 새벽 6시 성공 엔딩: 경찰 특공대가 괴물을 처치 ----------
+// 0.3 06:00 + 사이렌 · 경광등 · 2.8 쾅! 문 부수고 진입 · 4.3 괴물 돌진 · 4.5~6.1 일제 사격
+// 6.1~7.2 괴물 쓰러짐 · 7.4 "목표 제압!" · 9.0~ 살아남았다!
+const DAWN = { clock: 0.3, breach: 2.8, charge: 4.3, fire: 4.5, fireEnd: 6.1, fall: 6.1, down: 7.2, clear: 7.4, text: 9.0 }, DAWN_TIME = 11.2;
+function sweep(type, f0, f1, dur, vol) {
+  if (!actx) return;
+  const t0 = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t0 + dur);
+  g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+  o.connect(g); g.connect(actx.destination); o.start(t0); o.stop(t0 + dur);
+}
+function dawnSounds(g) {
+  const at = (t, fn) => setTimeout(() => { if (G === g && !g.skipped) fn(); }, t * 1000);
+  // 6시 종 + 사이렌 (삐-뽀 반복)
+  at(DAWN.clock, () => { beep(784, 1.0, 0.15); beep(1568, 0.7, 0.05); });
+  for (let i = 0; i < 16; i++) at(DAWN.clock + 0.3 + i * 0.5, () => beep(i % 2 ? 660 : 880, 0.48, 0.07 * (i < 12 ? 1 : (16 - i) / 4), 'triangle'));
+  at(1.8, () => { beep(70, 1.0, 0.3, 'sawtooth'); });                                         // 괴물이 경계하며 으르렁
+  if (END.heli) for (let t = 1.0; t < 8.5; t += 0.11) at(t, () => noiseHit(0.05, 0.12, 300));   // 🚁 헬기 프로펠러 (두두두)
+  // 쾅! 문 부수고 진입 + 섬광탄 삐-
+  at(DAWN.breach, () => { crunch(1.3); noiseHit(0.9, 0.7, 1800); beep(38, 1.0, 0.7, 'sine'); beep(3200, 1.2, 0.05); });
+  for (let i = 0; i < 6; i++) at(DAWN.breach + 0.35 + i * 0.16, () => beep(90, 0.08, 0.3, 'square'));   // 군화 발소리
+  at(DAWN.charge, () => { sweep('sawtooth', 120, 260, 0.6, 0.35); sweep('sawtooth', 500, 1100, 0.5, 0.12); });   // 괴물 포효
+  // 일제 사격 (타타타탕)
+  for (let t = DAWN.fire; t < DAWN.fireEnd; t += 0.075) at(t + Math.random() * 0.03, () => { noiseHit(0.06, 0.45, 2500, 'highpass'); beep(110 + Math.random() * 40, 0.05, 0.25, 'square'); });
+  at(DAWN.fire + 0.6, () => sweep('sawtooth', 400, 180, 0.8, 0.2));                           // 맞으면서 비명
+  // 쓰러짐: 내려앉는 울음 + 쿵
+  at(DAWN.fall, () => sweep('sawtooth', 220, 35, 1.4, 0.35));
+  at(DAWN.down - 0.1, () => { beep(32, 0.9, 0.7, 'sine'); noiseHit(0.5, 0.4, 600); });
+  at(DAWN.clear, () => { beep(1200, 0.08, 0.06, 'square'); setTimeout(() => beep(1200, 0.08, 0.06, 'square'), 120); });   // 무전 삑삑
+  at(DAWN.text, () => { [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep(f, 1.8, 0.12), i * 110)); });   // 승리 화음
+}
+
+// 특공대원 실루엣: (x,y)=발 위치, s=키, aim=총구 각도(왼쪽이 0), fire=총구 불꽃, shield=방패, step=걸음
+function swatSil(c, x, y, s, aim, fire, shield, step, beam) {
+  const col = '#0b1020';
+  c.save(); c.translate(x, y);
+  c.strokeStyle = col; c.fillStyle = col; c.lineCap = 'round';
+  // 다리
+  c.lineWidth = s * 0.1;
+  c.beginPath(); c.moveTo(-s * 0.04, -s * 0.48); c.lineTo(-s * 0.1 - Math.sin(step) * s * 0.06, 0); c.stroke();
+  c.beginPath(); c.moveTo(s * 0.05, -s * 0.48); c.lineTo(s * 0.1 + Math.sin(step) * s * 0.06, 0); c.stroke();
+  // 몸통(조끼) + 머리(헬멧)
+  c.fillRect(-s * 0.13, -s * 0.85, s * 0.26, s * 0.42);
+  c.beginPath(); c.arc(0, -s * 0.92, s * 0.1, Math.PI, 0); c.lineTo(s * 0.1, -s * 0.87); c.lineTo(-s * 0.1, -s * 0.87); c.fill();
+  c.fillStyle = 'rgba(120,170,255,.55)'; c.fillRect(-s * 0.1, -s * 0.9, s * 0.08, s * 0.025);        // 고글 반사
+  c.fillStyle = '#d8c24a'; c.font = `bold ${Math.round(s * 0.06)}px sans-serif`; c.textAlign = 'center';
+  c.fillText(END.vest, 0, -s * 0.62); c.textAlign = 'left';
+  // 소총 (왼쪽 = 괴물 쪽으로 겨눔)
+  const gx = -s * 0.05, gy = -s * 0.74, L = s * 0.42;
+  const tx = gx - Math.cos(aim) * L, ty = gy - Math.sin(aim) * L;
+  c.strokeStyle = col; c.lineWidth = s * 0.05; c.beginPath(); c.moveTo(gx + s * 0.08, gy + s * 0.02); c.lineTo(tx, ty); c.stroke();
+  c.lineWidth = s * 0.06; c.beginPath(); c.moveTo(0, -s * 0.78); c.lineTo(gx - Math.cos(aim) * L * 0.5, gy - Math.sin(aim) * L * 0.5); c.stroke();   // 팔
+  // 총에 달린 손전등 빛
+  if (beam > 0) {
+    c.globalCompositeOperation = 'lighter';
+    const bg = c.createRadialGradient(tx, ty, 2, tx, ty, s * 2.2);
+    bg.addColorStop(0, `rgba(255,250,220,${0.35 * beam})`); bg.addColorStop(1, 'rgba(255,240,200,0)');
+    c.fillStyle = bg; c.beginPath(); c.moveTo(tx, ty);
+    c.lineTo(tx - Math.cos(aim - 0.18) * s * 2.2, ty - Math.sin(aim - 0.18) * s * 2.2);
+    c.lineTo(tx - Math.cos(aim + 0.18) * s * 2.2, ty - Math.sin(aim + 0.18) * s * 2.2); c.fill();
+    c.globalCompositeOperation = 'source-over';
+  }
+  // 총구 불꽃
+  if (fire) {
+    c.fillStyle = '#fff3a0'; c.shadowColor = '#ffb020'; c.shadowBlur = s * 0.15;
+    c.beginPath();
+    for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2, r = (k % 2 ? 0.03 : 0.09) * s; c.lineTo(tx - Math.cos(aim) * s * 0.05 + Math.cos(a) * r, ty + Math.sin(a) * r); }
+    c.fill(); c.shadowBlur = 0;
+  }
+  // 방패
+  if (shield) {
+    c.fillStyle = '#121a2c'; c.fillRect(-s * 0.3, -s * 0.95, s * 0.16, s * 0.9);
+    c.fillStyle = 'rgba(150,190,255,.35)'; c.fillRect(-s * 0.28, -s * 0.85, s * 0.12, s * 0.08);
+    c.save(); c.translate(-s * 0.22, -s * 0.45); c.rotate(-Math.PI / 2); c.fillStyle = '#e8e8e8';
+    c.font = `bold ${Math.round(s * 0.075)}px sans-serif`; c.textAlign = 'center'; c.fillText(END.vest, 0, s * 0.025); c.restore();
+  }
+  c.restore();
+}
+
+function drawDawn(e) {
+  if (END.type === 'light') return drawLightEnd(e);          // 숲·묘지·교회: 빛 엔딩
+  const [w, h] = fitScare(), c = scCtx, S = Math.min(w, h);
+  c.globalAlpha = 1; c.shadowBlur = 0; c.globalCompositeOperation = 'source-over'; c.textAlign = 'left';
+  G.eatShake = 0;
+  const lerp = (a, b, k) => a + (b - a) * k, cl = v => Math.max(0, Math.min(1, v));
+  const s = Math.min(w * 0.42, h * 0.5), gy = h * (h > w ? 0.78 : 0.9);
+  const sun = cl((e - DAWN.clear) / 1.4);                                   // 마지막에 햇빛이 들어옴
+  let shx = 0, shy = 0;
+  const kick = t0 => { const d = e - t0; return d >= 0 && d < 0.45 ? 1 - d / 0.45 : 0; };
+  const shake = Math.max(kick(DAWN.breach), kick(DAWN.down - 0.1) * 0.8, (e > DAWN.fire && e < DAWN.fireEnd) ? 0.25 : 0);
+  G.eatShake = shake; shx = (Math.random() - .5) * S * 0.05 * shake; shy = (Math.random() - .5) * S * 0.05 * shake;
+  c.save(); c.translate(shx, shy);
+  // ── 방
+  c.fillStyle = `rgb(${Math.round(lerp(12, 96, sun))},${Math.round(lerp(9, 70, sun))},${Math.round(lerp(12, 48, sun))})`; c.fillRect(-20, -20, w + 40, h + 40);
+  c.fillStyle = `rgb(${Math.round(lerp(6, 50, sun))},${Math.round(lerp(4, 34, sun))},${Math.round(lerp(6, 22, sun))})`; c.fillRect(-20, gy, w + 40, h);
+  // 창문: 경광등(빨강/파랑 번갈아) + 새벽빛
+  const siren = e > DAWN.clock + 0.3 && e < DAWN.text, blue = Math.floor(e * 4) % 2 === 0;
+  const wins = END.deco === 'window' ? [[w * 0.1, h * 0.14], [w * 0.36, h * 0.14]] : [], wwd = S * 0.22, wht = S * 0.3;
+  if (END.deco !== 'window') drawDeco(c, w, h, gy, s, END.deco, e, sun);   // 배: 둥근 창 / 공장: 파이프·기계
+  if (END.heli && e > 1.0 && e < DAWN.text) {                // 🚁 해경 헬기 탐조등이 둥근 창 너머로 훑고 지나감
+    c.globalCompositeOperation = 'lighter';
+    const bx = w * (0.5 + Math.sin(e * 1.3) * 0.45);
+    const hb = c.createLinearGradient(0, 0, 0, gy); hb.addColorStop(0, 'rgba(230,240,255,.35)'); hb.addColorStop(1, 'rgba(230,240,255,0)');
+    c.fillStyle = hb; c.beginPath(); c.moveTo(bx - s * 0.05, 0); c.lineTo(bx + s * 0.05, 0); c.lineTo(bx + s * 0.45, gy); c.lineTo(bx - s * 0.45, gy); c.fill();
+    c.globalCompositeOperation = 'source-over';
+  }
+  for (const [x, y] of wins) {
+    const gl = c.createLinearGradient(x, y, x, y + wht);
+    gl.addColorStop(0, sun > 0 ? `rgba(255,245,215,${0.4 + sun * 0.6})` : '#1d2e52'); gl.addColorStop(1, sun > 0 ? '#ffc070' : '#2a2040');
+    c.fillStyle = gl; c.fillRect(x, y, wwd, wht);
+    if (siren) { c.fillStyle = blue ? 'rgba(40,90,255,.55)' : 'rgba(255,30,40,.55)'; c.fillRect(x, y, wwd, wht); }
+    c.fillStyle = '#140c08'; c.fillRect(x - 5, y - 5, wwd + 10, 6); c.fillRect(x - 5, y + wht - 1, wwd + 10, 6);
+    c.fillRect(x - 5, y, 6, wht); c.fillRect(x + wwd - 1, y, 6, wht); c.fillRect(x + wwd / 2 - 3, y, 6, wht); c.fillRect(x, y + wht / 2 - 3, wwd, 6);
+  }
+  if (siren) {                                                              // 방 안을 휩쓰는 경광등 빛
+    c.globalCompositeOperation = 'lighter';
+    const sw = c.createRadialGradient(blue ? w * 0.2 : w * 0.45, h * 0.3, 5, blue ? w * 0.2 : w * 0.45, h * 0.3, w * 0.7);
+    sw.addColorStop(0, blue ? 'rgba(40,80,255,.28)' : 'rgba(255,30,40,.28)'); sw.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = sw; c.fillRect(0, 0, w, h); c.globalCompositeOperation = 'source-over';
+  }
+  // ── 현관문 (오른쪽)
+  const dx = w * 0.84, dw = s * 0.55, dh = s * 1.3, dy = gy - dh;
+  if (e < DAWN.breach) {
+    c.fillStyle = '#3a2412'; c.fillRect(dx, dy, dw, dh);
+    c.fillStyle = '#5c3a1c';
+    for (const [yy, rot] of [[0.25, -0.12], [0.5, 0.1], [0.75, -0.08]]) { c.save(); c.translate(dx + dw / 2, dy + dh * yy); c.rotate(rot); c.fillRect(-dw * 0.65, -s * 0.03, dw * 1.3, s * 0.06); c.restore(); }
+    if (siren) { c.fillStyle = blue ? 'rgba(80,120,255,.9)' : 'rgba(255,60,60,.9)'; c.fillRect(dx, gy - 3, dw, 3); c.fillRect(dx + dw - 3, dy, 3, dh); }
+    // 문 두드리는 진동
+    if (e > DAWN.breach - 0.9) { const k = Math.sin(e * 40) * 2; c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(dx + k, dy, dw, dh); }
+  } else {
+    const og = c.createLinearGradient(dx, dy, dx, gy); og.addColorStop(0, '#fff3d8'); og.addColorStop(1, '#ffcf8a');
+    c.fillStyle = og; c.fillRect(dx, dy, dw, dh);
+    const r = seeded(21), t = e - DAWN.breach;                             // 안쪽(왼쪽)으로 날아오는 문 조각
+    for (let i = 0; i < 16; i++) {
+      const vx = -(r() * 1.5 + 0.3) * s * 1.5, vy = -(r() * 1.1) * s * 1.2, rot = (r() - .5) * 14;
+      const px = dx + dw * r() + vx * t, py = dy + dh * (0.2 + r() * 0.6) + vy * t + s * 3 * t * t;
+      if (py > gy + 6) continue;
+      c.save(); c.translate(px, py); c.rotate(rot * t); c.fillStyle = i % 3 ? '#6a4020' : '#4a2a12';
+      c.fillRect(-s * 0.08, -s * 0.02, s * (0.1 + r() * 0.12), s * 0.04); c.restore();
+    }
+    for (let i = 0; i < 6; i++) { c.save(); c.translate(dx - s * (0.2 + i * 0.25), gy - s * 0.015); c.rotate((i % 3 - 1) * 0.3); c.fillStyle = '#4a2a12'; c.fillRect(-s * 0.08, -s * 0.015, s * 0.16, s * 0.03); c.restore(); }
+  }
+  c.fillStyle = '#0a0604'; c.fillRect(dx - 8, dy - 8, dw + 16, 10); c.fillRect(dx - 8, dy, 8, dh); c.fillRect(dx + dw, dy, 8, dh);
+  // ── 괴물 (가운데, 특공대 쪽을 보고 있음)
+  let mx = w * 0.4, fall = 0, jaw = 0, arm = 0.4 + Math.sin(e * 2) * 0.1;
+  if (e > 1.8 && e < DAWN.charge) jaw = 0.3 + Math.sin(e * 9) * 0.1;
+  if (e >= DAWN.charge && e < DAWN.fire + 0.2) { const k = (e - DAWN.charge) / 0.4; mx = lerp(w * 0.4, w * 0.5, cl(k)); jaw = 1; arm = 2.2; }
+  if (e >= DAWN.fire + 0.2) {                                                // 총에 맞아 뒤로 밀림
+    const k = cl((e - DAWN.fire - 0.2) / (DAWN.fireEnd - DAWN.fire - 0.2));
+    mx = lerp(w * 0.5, w * 0.36, k) + (e < DAWN.fireEnd ? (Math.random() - .5) * s * 0.05 : 0); jaw = e < DAWN.fireEnd ? 0.7 + Math.random() * 0.3 : 0.5; arm = 1.6 + Math.sin(e * 25) * 0.5;
+  }
+  if (e >= DAWN.fall) fall = cl((e - DAWN.fall) / (DAWN.down - DAWN.fall)) ** 2;
+  const dead = cl((e - DAWN.down) / 0.8);
+  c.save(); c.translate(mx, gy); c.rotate(-fall * 1.48); c.scale(-1, 1);
+  c.globalAlpha = 1 - dead * 0.25;
+  const MP = monsterSil(c, 0, 0, s * 1.05, arm, jaw, e, dead > 0.3);        // 쓰러지면 눈빛이 꺼짐
+  c.restore(); c.globalAlpha = 1;
+  // 맞는 불꽃 / 쓰러진 뒤 연기
+  if (e > DAWN.fire && e < DAWN.fireEnd) {
+    c.fillStyle = '#ffe680';
+    for (let i = 0; i < 6; i++) { c.beginPath(); c.arc(mx + (Math.random() - .3) * s * 0.4, gy - s * (0.4 + Math.random() * 0.6), s * 0.015, 0, 7); c.fill(); }
+  }
+  if (e > DAWN.down - 0.3) {
+    const r = seeded(77);
+    for (let i = 0; i < 20; i++) {
+      const ph = ((e - DAWN.down) * (0.35 + r() * 0.4) + r()) % 1;
+      c.fillStyle = `rgba(160,160,170,${(1 - ph) * 0.35})`;
+      c.beginPath(); c.arc(mx - s * (0.2 + r() * 0.9), gy - s * 0.12 - ph * s * 0.7, s * (0.04 + r() * 0.05) * (0.5 + ph), 0, 7); c.fill();
+    }
+  }
+  // ── 특공대 (부서진 문으로 들어와 자리 잡음)
+  if (e >= DAWN.breach) {
+    const team = [[0.66, 1, 0.95], [0.75, 0, 1.0], [0.88, 0, 0.92], [0.97, 0, 0.88]];   // [최종 위치(화면 비율), 방패, 크기]
+    team.forEach(([fx, shield, sc], i) => {
+      const enter = cl((e - DAWN.breach - 0.25 - i * 0.18) / 0.7);
+      if (enter <= 0) return;
+      const x = lerp(dx + dw * 0.5, w * fx, enter), ss = s * 0.78 * sc;
+      const firing = e > DAWN.fire + i * 0.05 && e < DAWN.fireEnd;
+      const tgtX = mx, tgtY = gy - s * 0.6;
+      const aim = Math.atan2((gy - ss * 0.74) - tgtY, x - tgtX) * (e > DAWN.clear ? 0.2 : 1) + (e > DAWN.clear ? -0.7 : 0);   // 제압 후엔 총구를 내림
+      swatSil(c, x, gy, ss, aim, firing && Math.random() < 0.6, !!shield, enter < 1 ? e * 14 : 0, e < DAWN.clear + 0.6 ? 1 : 0.4);
+      if (firing && Math.random() < 0.5) {                                 // 예광탄
+        const ox = x - Math.cos(aim) * ss * 0.47, oy = gy - ss * 0.74 - Math.sin(aim) * ss * 0.42;
+        c.strokeStyle = 'rgba(255,230,140,.85)'; c.lineWidth = 2; c.beginPath(); c.moveTo(ox, oy);
+        c.lineTo(tgtX + (Math.random() - .5) * s * 0.3, tgtY + (Math.random() - .5) * s * 0.5); c.stroke();
+      }
+    });
+  }
+  // 섬광탄 번쩍
+  if (e > DAWN.breach && e < DAWN.breach + 0.5) { c.fillStyle = `rgba(255,255,255,${1 - (e - DAWN.breach) / 0.5})`; c.fillRect(-20, -20, w + 40, h + 40); }
+  // 마지막 햇빛 줄기
+  if (sun > 0) {
+    c.globalCompositeOperation = 'lighter';
+    for (const [x, y] of wins) {
+      const g2 = c.createLinearGradient(x, y, x + wwd * 1.6, gy);
+      g2.addColorStop(0, `rgba(255,220,140,${0.4 * sun})`); g2.addColorStop(1, 'rgba(255,200,120,0)');
+      c.fillStyle = g2; c.beginPath(); c.moveTo(x, y); c.lineTo(x + wwd, y); c.lineTo(x + wwd * 2.4, gy + 4); c.lineTo(x + wwd * 0.9, gy + 4); c.fill();
+    }
+    c.globalCompositeOperation = 'source-over';
+  }
+  c.restore();
+  // ── 글씨
+  const say = (txt, x, y, size, col, a) => {
+    c.globalAlpha = a; c.textAlign = 'center'; c.font = `900 ${Math.round(size)}px "Malgun Gothic",sans-serif`;
+    c.lineWidth = size * 0.14; c.strokeStyle = 'rgba(0,0,0,.75)'; c.strokeText(txt, x, y); c.fillStyle = col; c.fillText(txt, x, y);
+    c.globalAlpha = 1; c.textAlign = 'left';
+  };
+  if (e > DAWN.clock && e < DAWN.breach - 0.2) say('06:00 AM', w / 2, h * 0.42, S * 0.12, '#fff3c4', cl((e - DAWN.clock) / 0.4) * cl((DAWN.breach - 0.2 - e) / 0.4));
+  if (e > 1.4 && e < DAWN.breach - 0.2) say('🚨 삐-뽀 삐-뽀…', w / 2, h * 0.56, S * 0.05, blue ? '#8fb0ff' : '#ff8a8a', cl((e - 1.4) / 0.3));
+  if (e > DAWN.breach + 0.5 && e < DAWN.fire) say(END.shout, w / 2, h * 0.2, S * 0.055, '#ffe066', cl((e - DAWN.breach - 0.5) / 0.2));
+  if (e > DAWN.clear && e < DAWN.text + 0.3) say(END.clear, w / 2, h * 0.2, S * 0.06, '#9dffb0', cl((e - DAWN.clear) / 0.25));
+  // ── 살아남았다!
+  drawWinScreen(c, w, h, S, e, DAWN.text);
 }
 
 function calmPress() {
@@ -1491,12 +2148,15 @@ function end(win, reason) {
   const alive = G.friends.filter(f => !f.dead).length;
   $('endTitle').textContent = win ? (alive === 10 ? '완벽한 생존!' : '살아남았다!') : '게임 오버';
   $('endTitle').style.color = win ? '#7dd37d' : 'var(--red)';
-  $('endText').innerHTML = (win ? '새벽 6시, 해가 떴습니다. 괴물이 사라졌어요.' : reason + ' (' + clockText() + ')')
+  $('endText').innerHTML = (win ? END.win + '!' : reason + ' (' + clockText() + ')')
     + `<br>살아남은 친구: <b>${alive} / 10</b>명 · 막힌 문 ${G.doors.filter(d => d.hp > 0).length}개`;
   // 점프스케어 중이면 끝난 뒤에 게임 오버 화면
   // (끝나는 순간은 render()에서 G.scareT가 0이 될 때 처리)
-  if (!win && G.scareT > 0) G.endPending = true;
-  else { $('endScreen').classList.remove('hidden'); if (!win) beep(70, 1.2, 0.4, 'sawtooth'); }
+  if (win) {                                    // 🌅 살아남음 → 새벽 엔딩 애니메이션 뒤에 결과 화면
+    G.scareT = G.scareDur = DAWN_TIME; G.scareKind = 'dawn'; G.endPending = true;
+    G.hideT = 0; G.getOutT = 0; (END.type === 'light' ? lightSounds : dawnSounds)(G);
+  } else if (G.scareT > 0) G.endPending = true;
+  else { $('endScreen').classList.remove('hidden'); beep(70, 1.2, 0.4, 'sawtooth'); }
 }
 // 괴물에게 잡힘 → 괴물 점프스케어 → 먹히는 엔딩 → 게임 오버
 const CATCH_TIME = 2.6, EATEN_TIME = 7.6;
@@ -1508,7 +2168,9 @@ function caught(reason) {
 }
 // 엔딩 건너뛰기 (클릭 / 아무 키)
 function skipEnding() {
-  if (G && G.over && G.scareKind === 'monster' && G.scareT > 0 && G.scareDur - G.scareT > CATCH_TIME + 0.3) { G.scareT = 0; G.skipped = true; }
+  if (!G || !G.over || G.scareT <= 0) return;
+  const el = G.scareDur - G.scareT;
+  if ((G.scareKind === 'monster' && el > CATCH_TIME + 0.3) || (G.scareKind === 'dawn' && el > 0.6)) { G.scareT = 0; G.skipped = true; }
 }
 addEventListener('keydown', skipEnding);
 addEventListener('pointerdown', skipEnding);
@@ -1523,7 +2185,7 @@ function clockText() {
 // 같은 글자 = 하나의 가구
 const FURN_RECT = {};
 for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-  const ch = MAP[y][x]; if (ch === '#' || ch === '.' || ch === 'K') continue;
+  const ch = MAP[y][x]; if (ch === '#' || ch === '.' || ch === 'K' || ch === 'A') continue;
   const r = FURN_RECT[ch] || (FURN_RECT[ch] = { x0:x, y0:y, x1:x, y1:y });
   r.x0 = Math.min(r.x0, x); r.y0 = Math.min(r.y0, y); r.x1 = Math.max(r.x1, x); r.y1 = Math.max(r.y1, y);
 }
@@ -1531,6 +2193,79 @@ function rr(c, x, y, w, h, r) { c.beginPath(); if (c.roundRect) c.roundRect(x, y
 const hash = (x, y, k = 0) => { const s = Math.sin(x * 127.1 + y * 311.7 + k * 74.7) * 43758.5453; return s - Math.floor(s); };
 
 const bg = document.createElement('canvas'); bg.width = W * T; bg.height = H * T;
+// ---------- 새 맵: 바닥 무늬 / 소품 (2D) ----------
+function paintFloor(c, px, py, x, y, r) {
+  const [R0, G0, B0] = r.col, sh = (k, a = 16) => (hash(x, y, k) - 0.5) * a;
+  const rgb = (d, m = 1) => `rgb(${Math.max(0, R0 * m + d) | 0},${Math.max(0, G0 * m + d) | 0},${Math.max(0, B0 * m + d) | 0})`;
+  switch (r.floor) {
+    case 'wood': case 'deck':
+      for (let k = 0; k < 4; k++) { c.fillStyle = rgb(sh(k, 18)); c.fillRect(px, py + k * 8, T, 8); c.fillStyle = 'rgba(40,25,10,.35)'; c.fillRect(px, py + k * 8 + 7, T, 1); c.fillRect(px + ((x * 13 + k * 11) % T), py + k * 8, 1, 8); }
+      if (r.floor === 'deck') { c.fillStyle = 'rgba(30,20,10,.5)'; c.fillRect(px + 3, py + 3, 2, 2); c.fillRect(px + 27, py + 19, 2, 2); }
+      break;
+    case 'tile':
+      for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) { c.fillStyle = rgb(0, (i + j) % 2 ? 0.86 : 1); c.fillRect(px + i * 16, py + j * 16, 16, 16); }
+      break;
+    case 'carpet':
+      c.fillStyle = rgb(0); c.fillRect(px, py, T, T);
+      c.fillStyle = 'rgba(255,255,255,.08)'; for (let k = 0; k < 5; k++) c.fillRect(px + hash(x, y, k) * 30, py + hash(y, x, k) * 30, 2, 2);
+      break;
+    case 'metal':
+      c.fillStyle = rgb(sh(1, 10)); c.fillRect(px, py, T, T);
+      c.fillStyle = 'rgba(0,0,0,.3)'; c.fillRect(px, py, T, 1); c.fillRect(px, py, 1, T);
+      c.fillStyle = 'rgba(255,255,255,.12)'; for (const [a, b] of [[4, 4], [27, 4], [4, 27], [27, 27]]) c.fillRect(px + a, py + b, 2, 2);
+      c.strokeStyle = 'rgba(0,0,0,.12)'; c.lineWidth = 1; for (let k = 6; k < T; k += 8) { c.beginPath(); c.moveTo(px + k, py + 6); c.lineTo(px + k + 4, py + 10); c.stroke(); }
+      break;
+    case 'grass':
+      c.fillStyle = rgb(sh(2, 12)); c.fillRect(px, py, T, T);
+      for (let k = 0; k < 7; k++) { c.fillStyle = hash(x, y, k + 20) > 0.5 ? 'rgba(120,170,90,.35)' : 'rgba(20,40,15,.35)'; c.fillRect(px + hash(x, y, k) * 30, py + hash(y, x, k) * 26, 1.5, 5); }
+      break;
+    case 'dirt': case 'mud':
+      c.fillStyle = rgb(sh(3, 12)); c.fillRect(px, py, T, T);
+      c.fillStyle = r.floor === 'mud' ? 'rgba(20,30,15,.45)' : 'rgba(0,0,0,.18)';
+      for (let k = 0; k < (r.floor === 'mud' ? 2 : 6); k++) { c.beginPath(); c.ellipse(px + hash(x, y, k) * 28 + 2, py + hash(y, x, k) * 28 + 2, r.floor === 'mud' ? 7 : 2, r.floor === 'mud' ? 4 : 2, 0, 0, 7); c.fill(); }
+      break;
+    case 'stone':
+      c.fillStyle = rgb(sh(4, 14)); c.fillRect(px, py, T, T);
+      c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(px, py + 15, T, 2); c.fillRect(px + (y % 2 ? 10 : 22), py, 2, 15); c.fillRect(px + (y % 2 ? 22 : 10), py + 17, 2, 15);
+      break;
+    default:                                       // concrete
+      c.fillStyle = rgb(sh(5, 10)); c.fillRect(px, py, T, T);
+      c.fillStyle = 'rgba(0,0,0,.12)'; for (let k = 0; k < 6; k++) c.fillRect(px + hash(x, y, k) * 31, py + hash(y, x, k + 9) * 31, 2, 2);
+      if (r.stripe && (x + y) % 2 === 0) { c.fillStyle = 'rgba(230,190,40,.35)'; c.beginPath(); c.moveTo(px, py + T); c.lineTo(px + T / 2, py + T); c.lineTo(px + T, py); c.lineTo(px + T / 2, py); c.fill(); }
+  }
+}
+function drawProp2D(c, p) {
+  const x = p.x * T, y = p.y * T, w = p.w * T, h = p.h * T, cx = x + w / 2, cy = y + h / 2;
+  c.fillStyle = 'rgba(0,0,0,.25)'; rr(c, x + 3, y + 4, w - 2, h - 2, 4); c.fill();
+  const box2 = (col, edge) => { c.fillStyle = col; rr(c, x + 1, y + 1, w - 2, h - 2, 3); c.fill(); if (edge) { c.strokeStyle = edge; c.lineWidth = 1.5; c.stroke(); } };
+  const icon = (t, s = 14) => { c.font = `${s}px sans-serif`; c.textAlign = 'center'; c.fillText(t, cx, cy + s * 0.35); c.textAlign = 'left'; };
+  switch (p.kind) {
+    case 'crate': box2('#c99a5b', '#8a6330'); c.fillStyle = '#e8d3a1'; c.fillRect(cx - 2, y + 1, 4, h - 2); break;
+    case 'barrel': c.fillStyle = '#4a5a6a'; c.beginPath(); c.arc(cx, cy, T / 2 - 2, 0, 7); c.fill(); c.strokeStyle = '#2a3440'; c.lineWidth = 2; c.stroke(); break;
+    case 'table': box2('#9a6a3c', '#6a4422'); break;
+    case 'machine': box2('#5d6670', '#3a4048'); c.fillStyle = '#e04a3a'; c.fillRect(x + 6, y + 6, 4, 4); c.fillStyle = '#5ad06a'; c.fillRect(x + 12, y + 6, 4, 4); icon('⚙️', 16); break;
+    case 'conveyor': box2('#3a3e44', '#22252a'); c.fillStyle = 'rgba(255,255,255,.15)'; for (let k = 0; k < w; k += 10) c.fillRect(x + k, y + 4, 4, h - 8); break;
+    case 'tree': c.fillStyle = '#4a3420'; c.beginPath(); c.arc(cx, cy, 6, 0, 7); c.fill(); c.fillStyle = 'rgba(30,70,30,.9)'; c.beginPath(); c.arc(cx, cy - 2, 15, 0, 7); c.fill(); c.fillStyle = 'rgba(70,120,60,.6)'; c.beginPath(); c.arc(cx - 4, cy - 6, 7, 0, 7); c.fill(); break;
+    case 'rock': c.fillStyle = '#7a7a76'; c.beginPath(); c.ellipse(cx, cy + 2, 13, 10, 0.3, 0, 7); c.fill(); c.fillStyle = 'rgba(255,255,255,.15)'; c.beginPath(); c.ellipse(cx - 3, cy - 2, 5, 3, 0.3, 0, 7); c.fill(); break;
+    case 'tomb': c.fillStyle = '#8d8d92'; rr(c, cx - 9, y + 5, 18, 22, 8); c.fill(); c.fillStyle = '#5c5c62'; c.fillRect(cx - 1, y + 10, 2, 10); c.fillRect(cx - 5, y + 13, 10, 2); break;
+    case 'grave': c.fillStyle = '#5a4630'; rr(c, x + 3, y + 8, w - 6, h - 10, 6); c.fill(); c.fillStyle = '#8d8d92'; rr(c, cx - 6, y + 2, 12, 9, 4); c.fill(); break;
+    case 'statue': c.fillStyle = '#9a9aa0'; c.beginPath(); c.arc(cx, cy, Math.min(w, h) / 2 - 4, 0, 7); c.fill(); icon('🗿', 24); break;
+    case 'pillar': c.fillStyle = '#b0aca2'; c.beginPath(); c.arc(cx, cy, 11, 0, 7); c.fill(); c.strokeStyle = '#7e7a70'; c.lineWidth = 2; c.stroke(); break;
+    case 'bench': box2('#6b4428', '#4a2e18'); c.fillStyle = 'rgba(0,0,0,.2)'; c.fillRect(x + 2, y + 4, w - 4, 3); break;
+    case 'altar': box2('#e8e0cc', '#b0a080'); icon('✝️', 16); break;
+    case 'shelf': box2('#5a3a22', '#3a2412'); for (let k = 0; k < p.w * 3; k++) { c.fillStyle = ['#c0392b','#2e86c1','#27ae60','#f1c40f'][k % 4]; c.fillRect(x + 4 + k * 9, y + 6, 5, 18); } break;
+    case 'coffin': c.fillStyle = '#3a2418'; c.beginPath(); c.moveTo(cx - 7, y + 2); c.lineTo(cx + 7, y + 2); c.lineTo(cx + 11, y + 10); c.lineTo(cx + 7, y + h - 2); c.lineTo(cx - 7, y + h - 2); c.lineTo(cx - 11, y + 10); c.fill(); c.fillStyle = '#8a7050'; c.fillRect(cx - 1, y + 8, 2, 12); c.fillRect(cx - 4, y + 12, 8, 2); break;
+    case 'piano': box2('#1a1a1e', '#000'); c.fillStyle = '#eee'; c.fillRect(x + 4, y + h - 10, w - 8, 6); break;
+    case 'wheel': c.strokeStyle = '#7a5235'; c.lineWidth = 3; c.beginPath(); c.arc(cx, cy, 11, 0, 7); c.stroke(); for (let k = 0; k < 4; k++) { const a = k * Math.PI / 4; c.beginPath(); c.moveTo(cx - Math.cos(a) * 14, cy - Math.sin(a) * 14); c.lineTo(cx + Math.cos(a) * 14, cy + Math.sin(a) * 14); c.stroke(); } break;
+    case 'tent': c.fillStyle = '#c26a2a'; c.beginPath(); c.moveTo(x + 2, y + h - 2); c.lineTo(cx, y + 2); c.lineTo(x + w - 2, y + h - 2); c.fill(); c.fillStyle = '#7a3a12'; c.beginPath(); c.moveTo(cx - 6, y + h - 2); c.lineTo(cx, y + h / 2); c.lineTo(cx + 6, y + h - 2); c.fill(); break;
+    case 'campfire': c.fillStyle = '#5a5a5a'; c.beginPath(); c.arc(cx, cy, 12, 0, 7); c.fill(); icon('🔥', 18); break;
+    case 'pond': c.fillStyle = '#2a4a6a'; c.beginPath(); c.ellipse(cx, cy, w / 2 - 2, h / 2 - 2, 0, 0, 7); c.fill(); c.fillStyle = 'rgba(180,210,240,.25)'; c.beginPath(); c.ellipse(cx - 10, cy - 6, 14, 4, 0, 0, 7); c.fill(); break;
+    case 'food': box2('#d8dce0', '#9aa4ad'); icon('🍞'); break;
+    case 'water': box2('#9ab8d0', '#5f7f99'); icon('💧'); break;
+    default: box2('#777', '#444');
+  }
+}
+
 function buildBackground() {
   const c = bg.getContext('2d');
   c.fillStyle = '#6d8f4e'; c.fillRect(0, 0, bg.width, bg.height); // 바깥 잔디
@@ -1538,6 +2273,7 @@ function buildBackground() {
     if (MAP[y][x] === '#') continue;
     const px = x * T, py = y * T, room = roomOf(x, y);
     if (isDoorTile(x, y)) { c.fillStyle = '#9a6a3c'; c.fillRect(px, py, T, T); c.fillStyle = 'rgba(0,0,0,.12)'; c.fillRect(px, py + 14, T, 4); continue; }
+    if (!HOUSE) { paintFloor(c, px, py, x, y, ROOM_BY[room] || ROOMS[0]); continue; }
     if (room === '거실' || room === '복도' || room === '서재') {
       const base = { '거실':[200,154,100], '복도':[184,138,92], '서재':[160,112,70] }[room];
       for (let k = 0; k < 4; k++) {
@@ -1568,14 +2304,24 @@ function buildBackground() {
   }
   // 러그
   const rug = (x, y, w, h, col, border) => { rr(c, x * T, y * T, w * T, h * T, 6); c.fillStyle = border; c.fill(); rr(c, x * T + 5, y * T + 5, w * T - 10, h * T - 10, 4); c.fillStyle = col; c.fill(); };
-  rug(12, 4.3, 6, 2.4, '#a8454a', '#e3c27a');
-  rug(5.5, 2, 3, 2.2, '#8fb1d9', '#f2f2f2');
-  rug(12.5, 15.6, 6, 2.4, '#4c6b4f', '#c9b27a');
-  rug(1.3, 14.5, 2.5, 1.4, '#ffffff', '#9cc6d4');
+  if (HOUSE) {
+    rug(12, 4.3, 6, 2.4, '#a8454a', '#e3c27a');
+    rug(5.5, 2, 3, 2.2, '#8fb1d9', '#f2f2f2');
+    rug(12.5, 15.6, 6, 2.4, '#4c6b4f', '#c9b27a');
+    rug(1.3, 14.5, 2.5, 1.4, '#ffffff', '#9cc6d4');
+  }
+  for (const r of MD.rugs || []) rug(...r);
   // 벽
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     if (MAP[y][x] !== '#') continue;
     const px = x * T, py = y * T;
+    if (!HOUSE) {                                     // 새 맵: 맵마다 벽 색 (숲은 덤불 담)
+      c.fillStyle = MD.wall2D[0]; c.fillRect(px, py, T, T);
+      if (MD.hedge) { c.fillStyle = 'rgba(80,130,60,.5)'; for (let k = 0; k < 4; k++) { c.beginPath(); c.arc(px + 6 + hash(x, y, k) * 20, py + 6 + hash(y, x, k) * 20, 7, 0, 7); c.fill(); } }
+      else { c.fillStyle = 'rgba(0,0,0,.12)'; c.fillRect(px, py + 15, T, 2); c.fillRect(px + (y % 2 ? 8 : 24), py, 2, 15); c.fillRect(px + (y % 2 ? 24 : 8), py + 17, 2, 15); }
+      if (y + 1 < H && MAP[y + 1][x] !== '#') { c.fillStyle = MD.wall2D[1]; c.fillRect(px, py + T - 9, T, 9); }
+      continue;
+    }
     c.fillStyle = '#f1e6d0'; c.fillRect(px, py, T, T);
     c.fillStyle = '#d9c9aa'; c.fillRect(px, py, T, 3);
     if (y + 1 < H && MAP[y + 1][x] !== '#') {         // 벽 앞면(벽지)
@@ -1590,11 +2336,12 @@ function buildBackground() {
     if (horiz) { c.fillRect(x * T + 2, y * T + 8, T * 2 - 4, 16); c.fillStyle = '#a9d8f5'; c.fillRect(x * T + 5, y * T + 11, T * 2 - 10, 10); c.fillStyle = '#6b4a2f'; c.fillRect(x * T + T - 1, y * T + 11, 2, 10); }
     else { c.fillRect(x * T + 8, y * T + 2, 16, T * 2 - 4); c.fillStyle = '#a9d8f5'; c.fillRect(x * T + 11, y * T + 5, 10, T * 2 - 10); c.fillStyle = '#6b4a2f'; c.fillRect(x * T + 11, y * T + T - 1, 10, 2); }
   };
-  [[3,0],[13,0],[24,0],[4,19],[14,19],[25,19]].forEach(([x, y]) => win(x, y, true));
-  [[0,3],[0,13],[29,13],[29,16]].forEach(([x, y]) => win(x, y, false));
-  // 식물 (장식)
   const plant = (x, y) => { const px = x * T + 16, py = y * T + 16; c.fillStyle = '#9b5a34'; rr(c, px - 7, py, 14, 10, 3); c.fill(); c.fillStyle = '#3f8f45'; for (let i = 0; i < 5; i++) { c.beginPath(); c.arc(px + Math.cos(i * 1.3) * 6, py - 3 + Math.sin(i * 1.3) * 5, 6, 0, 7); c.fill(); } };
-  plant(18, 1); plant(11, 1); plant(28, 9); plant(1, 9);
+  if (HOUSE) {
+    [[3,0],[13,0],[24,0],[4,19],[14,19],[25,19]].forEach(([x, y]) => win(x, y, true));
+    [[0,3],[0,13],[29,13],[29,16]].forEach(([x, y]) => win(x, y, false));
+    plant(18, 1); plant(11, 1); plant(28, 9); plant(1, 9);     // 식물 (장식)
+  }
   drawFurniture(c);
   // 방 이름
   c.font = 'bold 13px "Malgun Gothic",sans-serif'; c.textAlign = 'center';
@@ -1617,8 +2364,9 @@ function drawFurniture(c) {
     c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(x + 36, y + 4, 6, h - 8);
     c.font = '13px sans-serif'; c.fillText('🛏️', x + w - 20, y + h - 6);            // 밑에 숨을 수 있다는 표시
   };
-  bed2D(...R('b'));
+  if (HOUSE) bed2D(...R('b'));
   for (const o of HIDE_OBJS) if (o.kind === 'bed' && !o.existing) bed2D(o.x * T, o.y * T, o.w * T, o.h * T, o.blanket);
+  if (HOUSE) {                                     // ↓ 집 전용 가구
   // 소파
   [x, y, w, h] = R('c');
   c.fillStyle = 'rgba(0,0,0,.2)'; rr(c, x + 3, y + 5, w, h, 6); c.fill();
@@ -1682,15 +2430,26 @@ function drawFurniture(c) {
     c.fillStyle = '#e8d3a1'; c.fillRect(bx + bw / 2 - 2, by, 4, bh);
     c.strokeStyle = '#8a6330'; c.lineWidth = 1; c.strokeRect(bx + .5, by + .5, bw - 1, bh - 1);
   }
+  }                                                // ↑ 집 전용 가구 끝
+  for (const p of PROPS) drawProp2D(c, p);         // 새 맵 소품
+  // 🎯 탄약 상자 (군용 초록 상자)
+  { const px = AMMO_BOX.x * T, py = AMMO_BOX.y * T;
+    c.fillStyle = 'rgba(0,0,0,.25)'; rr(c, px + 3, py + 4, T - 2, T - 4, 3); c.fill();
+    c.fillStyle = '#4f6b34'; rr(c, px + 1, py + 2, T - 2, T - 4, 3); c.fill();
+    c.fillStyle = '#3b5226'; c.fillRect(px + 1, py + T / 2 - 2, T - 2, 4);
+    c.fillStyle = '#e8d24a'; c.font = 'bold 9px sans-serif'; c.textAlign = 'center'; c.fillText('AMMO', px + T / 2, py + 12);
+    c.font = '11px sans-serif'; c.fillText('🎯', px + T / 2, py + T - 5); c.textAlign = 'left'; }
   // 숨는 오브젝트 (옷장·수납장·큰 상자)
   for (const o of HIDE_OBJS) {
     if (o.kind === 'bed') continue;                // 침대는 위에서 그림
-    const px = o.x * T, py = o.y * T;
-    c.fillStyle = 'rgba(0,0,0,.25)'; rr(c, px + 3, py + 4, T - 2, T - 2, 4); c.fill();
-    c.fillStyle = o.kind === 'crate' ? '#b98a4e' : o.kind === 'cabinet' ? '#8a6a4a' : '#6b4428';
-    rr(c, px + 1, py + 1, T - 2, T - 2, 4); c.fill();
-    c.strokeStyle = 'rgba(255,220,150,.55)'; c.lineWidth = 1.5; c.stroke();
-    c.font = '16px sans-serif'; c.textAlign = 'center'; c.fillText(o.kind === 'crate' ? '📦' : '🚪', px + T / 2, py + T / 2 + 6); c.textAlign = 'left';
+    const px = o.x * T, py = o.y * T, ow = o.w * T, oh = o.h * T;
+    c.fillStyle = 'rgba(0,0,0,.25)'; rr(c, px + 3, py + 4, ow - 2, oh - 2, 4); c.fill();
+    c.fillStyle = ({ crate:'#b98a4e', cabinet:'#8a6a4a', locker:'#7b8794', confessional:'#5a3a22', coffin:'#3a2418', barrel:'#4a5a6a', log:'#6b4a2a', bush:'#2f6a32', pew:'#6b4428' })[o.kind] || '#6b4428';
+    if (o.kind === 'bush') { for (let k = 0; k < 5; k++) { c.beginPath(); c.arc(px + 8 + (k % 3) * 8, py + 10 + Math.floor(k / 3) * 10, 9, 0, 7); c.fill(); } }
+    else if (o.kind === 'barrel' || o.kind === 'log') { c.beginPath(); c.arc(px + T / 2, py + T / 2, T / 2 - 2, 0, 7); c.fill(); }
+    else rr(c, px + 1, py + 1, ow - 2, oh - 2, 4), c.fill();
+    c.strokeStyle = 'rgba(255,220,150,.55)'; c.lineWidth = 1.5; if (o.kind !== 'bush') c.stroke();
+    c.font = '16px sans-serif'; c.textAlign = 'center'; c.fillText(HIDE_ICON(o), px + ow / 2, py + oh / 2 + 6); c.textAlign = 'left';
   }
 }
 
@@ -1822,7 +2581,7 @@ function drawEyes() {
   ctx.shadowBlur = 0;
 }
 
-const LAMPS = [[5,4],[14.5,4.5],[24,4],[15,9.8],[5,15],[15.5,15],[25,15]];
+const LAMPS = MD.lamps || ROOMS.map(r => [(r.x0 + r.x1 + 1) / 2, (r.y0 + r.y1 + 1) / 2]);
 function drawFog() {
   const p = G.p, x = p.x * T, y = p.y * T;
   fctx.globalCompositeOperation = 'source-over';
@@ -1874,15 +2633,15 @@ function drawOverlayInfo() {
 }
 
 // ---------- 3D 렌더링 (three.js) ----------
-const WALL_RGB = { '침실':[201,160,180], '거실':[205,180,142], '부엌':[216,216,204], '복도':[184,166,138], '욕실':[168,203,216], '서재':[143,165,138], '창고':[150,150,150] };
+const WALL_RGB = MD.wallRGB || Object.fromEntries(ROOMS.map(r => [r.n, r.wall]));
 const WALL_H = 1.6, EYE = 1.0, EYE_CROUCH = 0.55;
 const glCanvas = document.getElementById('gl');
 const renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.setSize(cv.width, cv.height, false);
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x020205);
-scene.fog = new THREE.Fog(0x020205, 3, 15);
+scene.background = new THREE.Color(MD.sky || 0x020205);          // 바깥 맵(숲·묘지)은 밤하늘
+scene.fog = new THREE.Fog(MD.sky || 0x020205, 3, 15);
 const cam3 = new THREE.PerspectiveCamera(72, cv.width / cv.height, 0.05, 60);
 scene.add(cam3);
 const ambient = new THREE.AmbientLight(0x8890c0, 0.15); scene.add(ambient);
@@ -1923,7 +2682,12 @@ function buildHouse() {
   const tex = new THREE.CanvasTexture(bg); tex.anisotropy = 4;
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshLambertMaterial({ map: tex }));
   floor.rotation.x = -Math.PI / 2; floor.position.set(W / 2, 0, H / 2); scene.add(floor);
-  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(W, H), M(0x3a3640)); ceil.rotation.x = Math.PI / 2; ceil.position.set(W / 2, WALL_H, H / 2); scene.add(ceil);
+  if (!MD.outdoor) { const ceil = new THREE.Mesh(new THREE.PlaneGeometry(W, H), M(0x3a3640)); ceil.rotation.x = Math.PI / 2; ceil.position.set(W / 2, WALL_H, H / 2); scene.add(ceil); }
+  else {                                             // 바깥: 별 몇 개 + 달
+    const starMat = new THREE.MeshBasicMaterial({ color: 0xcfd8ff, fog: false });
+    for (let i = 0; i < 60; i++) { const s = new THREE.Mesh(SPH, starMat); s.scale.setScalar(.04 + Math.random() * .04); s.position.set(Math.random() * W, 6 + Math.random() * 4, Math.random() * H); scene.add(s); }
+    const moon = new THREE.Mesh(SPH, new THREE.MeshBasicMaterial({ color: 0xf2ecd0, fog: false })); moon.scale.setScalar(1.2); moon.position.set(W * .7, 9, -6); scene.add(moon);
+  }
   // 벽 (방마다 다른 벽지 색)
   const walls = [];
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (MAP[y][x] === '#') walls.push([x, y]);
@@ -1945,10 +2709,15 @@ function buildHouse() {
     const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.35, 0.62), winMat); glass.position.z = 0.03; g.add(glass);
     box(0.05, 0.62, 0.05, frameMat, 0, 0, 0.04, g);
   };
-  [[3,0],[13,0],[24,0]].forEach(([x]) => addWin(x + 1, 1.0, 0));
-  [[4,19],[14,19],[25,19]].forEach(([x]) => addWin(x + 1, 19.0, Math.PI));
-  [[0,3],[0,13]].forEach(([, y]) => addWin(1.0, y + 1, Math.PI / 2));
-  [[29,13],[29,16]].forEach(([, y]) => addWin(29.0, y + 1, -Math.PI / 2));
+  if (HOUSE) {
+    [[3,0],[13,0],[24,0]].forEach(([x]) => addWin(x + 1, 1.0, 0));
+    [[4,19],[14,19],[25,19]].forEach(([x]) => addWin(x + 1, 19.0, Math.PI));
+    [[0,3],[0,13]].forEach(([, y]) => addWin(1.0, y + 1, Math.PI / 2));
+    [[29,13],[29,16]].forEach(([, y]) => addWin(29.0, y + 1, -Math.PI / 2));
+  } else if (!MD.outdoor) {                          // 새 실내 맵: 바깥벽에 창문 몇 개
+    [[4,0],[14,0],[24,0]].forEach(([x]) => addWin(x + 1, 1.0, 0));
+    [[5,19],[15,19],[25,19]].forEach(([x]) => addWin(x + 1, 19.0, Math.PI));
+  }
   buildFurniture();
 }
 
@@ -1966,9 +2735,10 @@ function buildFurniture() {
     box(.45, .1, .7, M(0xffffff), r.x + .5, .53, r.cz - .45); box(.45, .1, .7, M(0xffffff), r.x + .5, .53, r.cz + .45);
     box(r.w * .62, .1, r.d - .2, M(blanket), r.x + r.w * .62, .52, r.cz);         // 이불
   };
-  bed3D(R('b'));
+  if (HOUSE) bed3D(R('b'));
   for (const o of HIDE_OBJS) if (o.kind === 'bed' && !o.existing)
-    bed3D({ x: o.x, z: o.y, w: o.w, d: o.h, cx: o.cx, cz: o.cy }, new THREE.Color(o.blanket).getHex());
+    bed3D({ x: o.x, z: o.y, w: o.w, d: o.h, cx: o.cx, cz: o.cy }, new THREE.Color(o.blanket || '#5b8bd6').getHex());
+  if (HOUSE) {                                       // ↓ 집 전용 가구
   // 소파 + TV
   r = R('c');
   box(r.w - .1, .38, r.d - .1, M(0x6a8db1), r.cx, .19, r.cz);
@@ -2026,26 +2796,119 @@ function buildFurniture() {
     sph(.3, M(0x3f8f45), x + .5, .6, y + .5); sph(.22, M(0x4fa055), x + .45, .85, y + .55);
   }
   // 천장 전등 (꺼진 전등)
-  for (const [lx, ly] of [[5,4],[14.5,4.5],[24,4],[15,9.8],[5,15],[15.5,15],[25,15]]) sph(.18, M(0xdddddd), lx, WALL_H - .05, ly, null, 1, .4, 1);
+  }                                                  // ↑ 집 전용 가구 끝
+  if (!MD.outdoor) for (const [lx, ly] of LAMPS) sph(.18, M(0xdddddd), lx, WALL_H - .05, ly, null, 1, .4, 1);
+  for (const p of PROPS) buildProp3D(p);             // 새 맵 소품
+  // 🎯 탄약 상자 (창고) — 초록 군용 상자 + 노란 글씨 띠
+  { const ax = AMMO_BOX.x + .5, az = AMMO_BOX.y + .5;
+    box(.8, .5, .6, M(0x4f6b34), ax, .25, az);
+    box(.82, .06, .62, M(0x3b5226), ax, .5, az);                       // 뚜껑
+    box(.04, .44, .61, M(0x3b5226), ax - .25, .24, az); box(.04, .44, .61, M(0x3b5226), ax + .25, .24, az);
+    box(.03, .1, .3, M(0xe8d24a), ax - .41, .3, az);                    // 방 쪽 면의 노란 표시
+    for (let i = 0; i < 5; i++) sph(.035, M(0xffd84a), ax - .2 + i * .1, .56, az - .15 + (i % 2) * .1);   // 위에 흩어진 비비탄
+  }
   // 숨는 오브젝트 — 앞면(문)이 fx,fy 쪽을 바라보게
   for (const o of HIDE_OBJS) {
     if (o.kind === 'bed') continue;                // 침대는 위에서 만듦
+    if (o.kind === 'pew') {                        // 긴 의자 (밑에 숨기): 다리 위의 판 + 등받이
+      box(o.w - .1, .08, o.h - .3, M(0x6b4428), o.cx, .42, o.cy);
+      box(o.w - .1, .5, .06, M(0x5a3820), o.cx, .7, o.y + o.h - .18);
+      for (const dx of [-1, 1]) box(.08, .42, o.h - .35, M(0x4a2e18), o.cx + dx * (o.w / 2 - .12), .21, o.cy);
+      continue;
+    }
     const g = new THREE.Group(); g.position.set(o.x + .5, 0, o.y + .5);
-    g.rotation.y = Math.atan2(o.fx - o.x, o.fy - o.y); scene.add(g);
+    g.rotation.y = Math.atan2((o.fx ?? o.x) - o.x, (o.fy ?? o.y + 1) - o.y); scene.add(g);
+    if (o.kind === 'bush') {
+      for (let k = 0; k < 6; k++) sph(.3 + (k % 3) * .05, M(k % 2 ? 0x2f6a32 : 0x3d7a3a), Math.cos(k * 1.1) * .2, .3 + (k % 2) * .25, Math.sin(k * 1.1) * .2, g);
+      continue;
+    }
+    if (o.kind === 'barrel') {
+      const b = new THREE.Mesh(new THREE.CylinderGeometry(.36, .36, .95, 16), M(0x4a5a6a)); b.position.y = .475; g.add(b);
+      for (const yy of [.2, .75]) { const r2 = new THREE.Mesh(new THREE.CylinderGeometry(.375, .375, .05, 16), M(0x2a3440)); r2.position.y = yy; g.add(r2); }
+      continue;
+    }
+    if (o.kind === 'log') {
+      const l = new THREE.Mesh(new THREE.CylinderGeometry(.42, .42, .95, 14), M(0x6b4a2a)); l.rotation.x = Math.PI / 2; l.position.y = .42; g.add(l);
+      const hole = new THREE.Mesh(new THREE.CylinderGeometry(.3, .3, .02, 14), M(0x1a1008)); hole.rotation.x = Math.PI / 2; hole.position.set(0, .42, .48); g.add(hole);
+      continue;
+    }
+    if (o.kind === 'coffin') {
+      box(.62, .45, .95, M(0x3a2418), 0, .225, 0, g); box(.66, .06, .99, M(0x2a180e), 0, .47, 0, g);
+      box(.06, .03, .4, M(0x9a8060), 0, .505, 0, g); box(.25, .03, .06, M(0x9a8060), 0, .505, -.08, g);   // 십자가
+      continue;
+    }
     if (o.kind === 'crate') {
       box(.92, .85, .92, M(0xc99a5b), 0, .425, 0, g);
       box(.94, .1, .14, M(0xe8d3a1), 0, .86, 0, g);                       // 테이프
       box(.6, .03, .44, M(0xb98a4e), 0, .9, .26, g).rotation.x = -0.5;     // 열린 덮개
       box(.5, .3, .02, M(0x3a2a18), 0, .45, .47, g);                       // 손잡이 구멍
     } else {
-      const tall = o.kind === 'wardrobe', h = tall ? 1.5 : 1.05;
-      box(.94, h, .7, M(tall ? 0x6b4428 : 0x8a6a4a), 0, h / 2, -.1, g);   // 몸통
+      const tall = o.kind !== 'cabinet', h = tall ? 1.5 : 1.05;          // 옷장·사물함·고해소는 키가 큼
+      const [bodyC, doorC] = ({ locker:[0x6f7a86, 0x8a96a2], confessional:[0x4a2e18, 0x5a3a22], cabinet:[0x8a6a4a, 0x9c7a56] })[o.kind] || [0x6b4428, 0x7d5332];
+      box(.94, h, .7, M(bodyC), 0, h / 2, -.1, g);   // 몸통
       for (const sx of [-.23, .23]) {
-        box(.43, h - .12, .03, M(tall ? 0x7d5332 : 0x9c7a56), sx, h / 2, .26, g);   // 문짝
+        box(.43, h - .12, .03, M(doorC), sx, h / 2, .26, g);   // 문짝
         for (let k = 0; k < (tall ? 6 : 4); k++) box(.33, .025, .02, M(0x3a2414), sx, .3 + k * .18, .285, g); // 틈(루버)
         box(.03, .14, .03, M(0xd8b060), sx > 0 ? .04 : -.04, h * .55, .29, g);      // 손잡이
       }
     }
+  }
+}
+
+// --- 새 맵 소품 (3D) ---
+function buildProp3D(p) {
+  const cx = p.x + p.w / 2, cz = p.y + p.h / 2, W2 = p.w - .1, D2 = p.h - .1;
+  const cyl = (rt, rb, h, col, x, y, z, seg = 14) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), M(col)); m.position.set(x, y, z); scene.add(m); return m; };
+  switch (p.kind) {
+    case 'crate': box(.88, .8, .88, M(0xc99a5b), cx, .4, cz); box(.12, .81, .89, M(0xe8d3a1), cx, .4, cz); break;
+    case 'barrel': cyl(.36, .36, .95, 0x4a5a6a, cx, .475, cz); cyl(.375, .375, .05, 0x2a3440, cx, .25, cz); cyl(.375, .375, .05, 0x2a3440, cx, .75, cz); break;
+    case 'table':
+      box(W2, .06, D2, M(0x9a6a3c), cx, .72, cz);
+      for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) box(.07, .7, .07, M(0x6a4422), cx + dx * (W2 / 2 - .08), .35, cz + dz * (D2 / 2 - .08));
+      break;
+    case 'machine': {
+      const hh = 1.1 + (p.w > 2 ? .2 : 0);
+      box(W2, hh, D2, M(0x5d6670), cx, hh / 2, cz); box(W2 * .6, .25, D2 * .6, M(0x3a4048), cx, hh + .12, cz);
+      box(.08, .08, .02, new THREE.MeshBasicMaterial({ color: 0xff4a3a }), cx - W2 * .3, hh * .75, cz + D2 / 2 + .01);
+      box(.08, .08, .02, new THREE.MeshBasicMaterial({ color: 0x5ad06a }), cx - W2 * .15, hh * .75, cz + D2 / 2 + .01);
+      cyl(.08, .08, 1.0, 0x8a8f96, cx + W2 * .3, hh + .5, cz);                  // 굴뚝/파이프
+      break; }
+    case 'conveyor':
+      box(W2, .12, D2 * .8, M(0x2a2d32), cx, .7, cz); box(W2, .05, D2 * .82, M(0x5a5f66), cx, .62, cz);
+      for (let k = 0; k < p.w; k += 2) box(.08, .6, .08, M(0x44484e), p.x + k + .5, .3, cz);
+      for (let k = 0; k < p.w; k += 3) box(.5, .3, .4, M(0xb98a4e), p.x + k + .8, .91, cz);   // 컨베이어 위 상자
+      break;
+    case 'tree':
+      cyl(.14, .2, 1.4, 0x4a3420, cx, .7, cz, 8);
+      sph(.55, M(0x234a24), cx, 1.6, cz); sph(.42, M(0x2e5a2c), cx + .2, 2.0, cz - .1); sph(.38, M(0x1d3e1e), cx - .2, 1.9, cz + .15);
+      break;
+    case 'rock': sph(.42, M(0x7a7a76), cx, .25, cz, null, 1.1, .7, .9); break;
+    case 'tomb': box(.55, .75, .16, M(0x8d8d92), cx, .375, cz); sph(.275, M(0x8d8d92), cx, .75, cz, null, 1, .5, .29); box(.04, .3, .02, M(0x4c4c52), cx, .5, cz + .09); box(.18, .04, .02, M(0x4c4c52), cx, .55, cz + .09); break;
+    case 'grave': box(.8, .2, .85, M(0x5a4630), cx, .1, cz + .05); box(.5, .55, .12, M(0x8d8d92), cx, .3, cz - .4); break;
+    case 'statue': box(W2 * .7, .5, D2 * .7, M(0x8a8a90), cx, .25, cz); box(.35, 1.0, .3, M(0x9a9aa0), cx, 1.0, cz); sph(.18, M(0x9a9aa0), cx, 1.65, cz); box(.9, .12, .12, M(0x9a9aa0), cx, 1.3, cz); break;
+    case 'pillar': cyl(.3, .34, WALL_H, 0xb0aca2, cx, WALL_H / 2, cz, 12); break;
+    case 'bench':
+      box(W2, .08, D2 * .6, M(0x6b4428), cx, .42, cz); box(W2, .45, .06, M(0x5a3820), cx, .68, cz + D2 * .3);
+      for (const dx of [-1, 1]) box(.08, .42, D2 * .55, M(0x4a2e18), cx + dx * (W2 / 2 - .1), .21, cz);
+      break;
+    case 'altar':
+      box(W2, .9, D2, M(0xe8e0cc), cx, .45, cz); box(W2 + .05, .05, D2 + .05, M(0xb8963a), cx, .9, cz);
+      box(.06, .5, .06, M(0xd4b04a), cx, 1.2, cz); box(.3, .06, .06, M(0xd4b04a), cx, 1.32, cz);     // 십자가
+      break;
+    case 'shelf': box(W2, 1.3, .35, M(0x5a3a22), cx, .65, cz - .2); for (let k = 0; k < p.w * 4; k++) box(.15, .28, .22, M([0xc0392b, 0x2e86c1, 0x27ae60, 0xf1c40f][k % 4]), p.x + .2 + k * .22, .3 + (k % 3) * .4, cz - .18); break;
+    case 'coffin': box(.6, .45, .92, M(0x3a2418), cx, .225, cz); box(.64, .06, .96, M(0x2a180e), cx, .47, cz); break;
+    case 'piano': box(W2, 1.0, .6, M(0x1a1a1e), cx, .5, cz - .1); box(W2, .05, .3, M(0xeeeeee), cx, .75, cz + .3); break;
+    case 'wheel': cyl(.08, .08, .9, 0x5a3a22, cx, .45, cz, 8); { const w2 = new THREE.Mesh(new THREE.TorusGeometry(.38, .04, 8, 20), M(0x7a5235)); w2.position.set(cx, 1.05, cz); scene.add(w2); } break;
+    case 'tent': { const t = new THREE.Mesh(new THREE.ConeGeometry(Math.min(W2, D2) * .75, 1.3, 4), M(0xc26a2a)); t.position.set(cx, .65, cz); t.rotation.y = Math.PI / 4; scene.add(t); } break;
+    case 'campfire':
+      for (let k = 0; k < 6; k++) sph(.1, M(0x5a5a5a), cx + Math.cos(k) * .3, .08, cz + Math.sin(k) * .3);
+      sph(.18, new THREE.MeshBasicMaterial({ color: 0xff7a20 }), cx, .2, cz, null, 1, 1.6, 1);
+      { const fl = new THREE.PointLight(0xff8a30, .8, 4, 2); fl.position.set(cx, .5, cz); scene.add(fl); }
+      break;
+    case 'pond': { const pd = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .04, 24), new THREE.MeshLambertMaterial({ color: 0x1e3a56, emissive: 0x06121e })); pd.scale.set(W2 / 2, 1, D2 / 2); pd.position.set(cx, .03, cz); scene.add(pd); } break;
+    case 'food': box(.9, 1.4, .9, M(0xd8dce0), cx, .7, cz); box(.9, .02, .91, M(0x9aa4ad), cx, .95, cz); break;
+    case 'water': cyl(.35, .4, .9, 0x6f8fa8, cx, .45, cz); cyl(.3, .3, .05, 0x2a5a8a, cx, .92, cz); break;
+    default: box(W2, .8, D2, M(0x777777), cx, .4, cz);
   }
 }
 
@@ -2174,6 +3037,7 @@ const R3 = { game: null, people: [], monster: null, tools: new Map(), pellets: [
 buildHouse();
 emojiSprite('🍞', .45).position.set(FRIDGE.x + .5, 1.8, FRIDGE.y + .5);
 emojiSprite('💧', .45).position.set(SINK.x + .5, 1.3, SINK.y + .5);
+emojiSprite('🎯', .4).position.set(AMMO_BOX.x + .5, 1.0, AMMO_BOX.y + .5);
 R3.monster = makeMonster();
 
 function sync3D() {
@@ -2187,6 +3051,7 @@ function sync3D() {
   G.friends.forEach((f, i) => { if (!f.dead && R3.people[i].dead) { scene.remove(R3.people[i].g); R3.people[i] = makePerson(f); } });
   G.friends.forEach((f, i) => animPerson(R3.people[i], f));
   animMonster(R3.monster);
+  R3.monster.g.visible = !TEST;                      // 테스트 모드: 괴물 없음
   G.doors.forEach((d, i) => { doorMeshes[i].visible = d.hp > 0; doorMeshes[i].scale.y = 0.55 + 0.45 * d.hp / MAX_DOOR_HP; });
   // 도구
   for (const [t, s] of R3.tools) if (!G.tools.includes(t)) { scene.remove(s); R3.tools.delete(t); }
@@ -2200,12 +3065,13 @@ function sync3D() {
 function render3D(dt) {
   sync3D();
   const p = G.p;
-  R3.eye += ((p.hidden ? (p.hidden.kind === 'bed' ? 0.12 : 0.5) : p.crouch ? EYE_CROUCH : EYE) - R3.eye) * Math.min(1, dt * 10);
+  R3.eye += ((p.hidden ? (UNDER(p.hidden) ? 0.12 : 0.5) : p.crouch ? EYE_CROUCH : EYE) - R3.eye) * Math.min(1, dt * 10);
   const bob = (p.moving && p.z <= 0) ? Math.sin(p.step * 1.2) * (p.crouch ? .015 : .035) : 0;
   const eyeY = R3.eye + bob + (p.z || 0);
   cam3.position.set(p.x, eyeY, p.y);
   cam3.lookAt(p.x + Math.cos(p.dir), eyeY, p.y + Math.sin(p.dir));
   ambient.intensity = DIFF.amb * 1.6;
+  scene.fog.near = TEST ? 25 : 3; scene.fog.far = TEST ? 80 : 15;   // 테스트 모드: 집 전체가 환하게 보임
   spot.visible = flashlight;
   // 손전등이 없는 직업은 아주 희미한 빛만
   spill.visible = flashlight || JOB !== 'survival';
@@ -2222,7 +3088,7 @@ function drawMinimap() {
   for (const d of G.doors) if (d.hp > 0) for (const [dx, dy] of d.tiles) { ctx.fillStyle = '#c07a35'; ctx.fillRect(x0 + dx * ts, y0 + dy * ts, ts, ts); }
   for (const f of G.friends) { ctx.fillStyle = f.dead ? '#777' : f.role === 'builder' ? '#ffa94d' : '#69db7c'; ctx.beginPath(); ctx.arc(x0 + f.x * ts, y0 + f.y * ts, 2.2, 0, 7); ctx.fill(); }
   const m = G.m;
-  if (dist(m, G.p) < 6 || m.stun > 0 || (m.state === 'chase' && m.tgt === G.p)) { ctx.fillStyle = '#ff3030'; ctx.beginPath(); ctx.arc(x0 + m.x * ts, y0 + m.y * ts, 3.2, 0, 7); ctx.fill(); }
+  if (!TEST && (dist(m, G.p) < 6 || m.stun > 0 || (m.state === 'chase' && m.tgt === G.p))) { ctx.fillStyle = '#ff3030'; ctx.beginPath(); ctx.arc(x0 + m.x * ts, y0 + m.y * ts, 3.2, 0, 7); ctx.fill(); }
   const p = G.p, px = x0 + p.x * ts, py = y0 + p.y * ts;
   if (flashlight) { ctx.fillStyle = 'rgba(255,240,180,.25)'; ctx.beginPath(); ctx.moveTo(px, py); ctx.arc(px, py, 26, p.dir - 0.45, p.dir + 0.45); ctx.fill(); }
   ctx.fillStyle = '#fff'; ctx.beginPath();
@@ -2255,7 +3121,7 @@ function drawFullMap() {
   const p = G.p, m = G.m;
   for (const f of G.friends) drawHuman(f);
   // 괴물은 작은 지도와 똑같이 가까이 있을 때만 보임
-  if (dist(m, p) < 6 || m.stun > 0 || (m.state === 'chase' && m.tgt === p)) { drawMonster(); drawEyes(); }
+  if (!TEST && (dist(m, p) < 6 || m.stun > 0 || (m.state === 'chase' && m.tgt === p))) { drawMonster(); drawEyes(); }
   if (flashlight) { ctx.fillStyle = 'rgba(255,240,180,.25)'; ctx.beginPath(); ctx.moveTo(p.x * T, p.y * T); ctx.arc(p.x * T, p.y * T, 3 * T, p.dir - 0.45, p.dir + 0.45); ctx.fill(); }
   drawHuman(p);
   ctx.strokeStyle = '#9fd3ff'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(p.x * T, p.y * T, 16, 0, 7); ctx.stroke();
@@ -2278,7 +3144,7 @@ function renderFP(dt) {
   ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.fillRect(cx - 1, cy - 1, 3, 3);
   if (G.use > 0) {
     ctx.fillStyle = 'rgba(0,0,0,.7)'; ctx.fillRect(cx - 60, cy + 30, 120, 10);
-    ctx.fillStyle = G.useTarget === 'food' ? '#e0a03a' : G.useTarget === 'water' ? '#3aa0e0' : G.useTarget === 'revive' ? '#5fd37a' : '#b07a40';
+    ctx.fillStyle = G.useTarget === 'food' ? '#e0a03a' : G.useTarget === 'water' ? '#3aa0e0' : G.useTarget === 'revive' ? '#5fd37a' : G.useTarget === 'ammo' ? '#ffd84a' : '#b07a40';
     ctx.fillRect(cx - 60, cy + 30, 120 * G.use, 10);
   }
   if (G.m.state === 'chase' && G.m.tgt === G.p) {
@@ -2309,7 +3175,7 @@ function render(dt) {
   const closetEl = $('closet'), hid = running && !G.over && G.p.hidden;
   closetEl.classList.toggle('hidden', !hid);
   document.body.classList.toggle('hiding', !!hid);
-  closetEl.classList.toggle('underbed', !!hid && G.p.hidden.kind === 'bed');
+  closetEl.classList.toggle('underbed', !!hid && UNDER(G.p.hidden));
   $('bLeave').classList.toggle('hidden', !hid);
   $('bLeave').textContent = hid ? `🚪 나가기${isTouch ? '' : ' (E)'}` : '';
   $('bQuit').classList.toggle('hidden', !(running && !G.over));
@@ -2331,11 +3197,14 @@ function render(dt) {
   if (scaring) {
     G.scareT -= dt;
     const el = G.scareDur - G.scareT;
-    if (G.scareKind !== 'monster') drawScare(el);
+    if (G.scareKind === 'dawn') drawDawn(el);
+    else if (G.scareKind !== 'monster') drawScare(el);
     else if (el < CATCH_TIME) drawMonsterScare(el);
     else drawEaten(el - CATCH_TIME);
-    $('wrap').classList.toggle('shake', G.scareKind !== 'monster' || el < CATCH_TIME || G.eatShake > 0);
+    $('wrap').classList.toggle('shake', G.scareKind === 'ghost' || (G.scareKind === 'monster' && el < CATCH_TIME) || G.eatShake > 0);
+    $('hud').classList.toggle('shake', G.scareKind === 'ghost' || (G.scareKind === 'monster' && el < CATCH_TIME));
   }
+  $('testPanel').classList.toggle('hidden', !(running && TEST && !G.over));
   if (G.endPending && G.scareT <= 0) { G.endPending = false; $('endScreen').classList.remove('hidden'); }
 
   // 💓 숨 고르기 미니게임 화면
@@ -2354,7 +3223,8 @@ function render(dt) {
 
   let st = G.p.hidden ? `${HIDE_ICON(G.p.hidden)} ${G.p.hidden.name} ${HIDE_IN(G.p.hidden)} 숨음 — 괴물이 당신을 찾을 수 없습니다`
     : G.p.crouch ? '🫣 웅크림 — 괴물 눈에 안 보여요 (닿으면 잡혀요!)' : '🚶 서 있음 — 괴물에게 보일 수 있습니다';
-  if (G.m.state === 'open' && G.p.hidden === G.m.openObj) st = `😱 괴물이 ${G.m.openObj.name}${G.m.openObj.kind === 'bed' ? ' 밑을 들여다보러' : '을(를) 열러'} 옵니다! 나가서 도망치세요!`;
+  if (G.m.state === 'open' && G.p.hidden === G.m.openObj) st = `😱 괴물이 ${G.m.openObj.name}${UNDER(G.m.openObj) ? ' 밑을 들여다보러' : '을(를) 열러'} 옵니다! 나가서 도망치세요!`;
+  else if (TEST) st = '🧪 테스트 모드 — 괴물 없음 · 배고픔·목마름 없음 · 공격 없음';
   else if (G.m.wake > 0) st = '괴물이 깨어나기까지 ' + Math.ceil(G.m.wake) + '초… 친구들이 흩어집니다!';
   else if (G.m.stun > 0) st = `💫 괴물이 비비탄에 맞아 ${Math.ceil(G.m.stun)}초 동안 못 움직입니다! 지금이 기회!`;
   else if (G.m.state === 'chase' && G.m.tgt === G.p) st = '⚠️ 괴물이 당신을 쫓아옵니다! 웅크리세요! (C / Shift)';
@@ -2366,12 +3236,14 @@ function render(dt) {
 
   let msg = '';
   if (G.flashT > 0) msg = G.flash;
-  else if (G.useTarget === 'food') msg = '냉장고: E 길게 눌러 음식 먹기';
-  else if (G.useTarget === 'water') msg = '싱크대: E 길게 눌러 물 마시기';
+  else if (G.useTarget === 'food') msg = `${MD.food.name}: ${isTouch ? '행동' : 'E'} 길게 눌러 음식 먹기`;
+  else if (G.useTarget === 'water') msg = `${MD.water.name}: ${isTouch ? '행동' : 'E'} 길게 눌러 물 마시기`;
+  else if (G.useTarget === 'ammo') msg = `🎯 탄약 상자: ${isTouch ? '행동' : 'E'} 길게 눌러 비비탄 채우기 (🔫 ${G.ammo}/${GUN_AMMO})`;
+  else if (G.nearAmmo) msg = (JOB === 'sentinel' && WEAPON === 'gun') ? `🎯 탄약 상자 — 비비탄이 이미 가득 차 있어요 (🔫 ${G.ammo}/${GUN_AMMO})` : '🎯 탄약 상자 — 🔫 총을 든 센티널만 쓸 수 있어요';
   else if (G.useTarget === 'revive') msg = `💊 ${G.reviveF.name}: ${isTouch ? '행동' : 'E'} 길게 눌러 살리기 (구급상자 ${G.kits}개)`;
   else if (G.useTarget === 'door') msg = `${G.useDoor.name}: E 길게 눌러 문 막기 (도구 1개)`;
   else if (G.hideObj) msg = `${HIDE_ICON(G.hideObj)} ${G.hideObj.name}: ${isTouch ? '행동' : 'E'} 눌러 ${HIDE_IN(G.hideObj)} 숨기`;
-  else if (G.hunger < 25 || G.thirst < 25) msg = (G.hunger < 25 ? '배가 고프다… ' : '') + (G.thirst < 25 ? '목이 마르다… ' : '') + '부엌으로 가자 (오른쪽 위)';
+  else if (G.hunger < 25 || G.thirst < 25) msg = (G.hunger < 25 ? '배가 고프다… ' : '') + (G.thirst < 25 ? '목이 마르다… ' : '') + `${MD.foodHint} 쪽으로 가자`;
   msgEl.textContent = msg;
   msgEl.style.color = (G.hunger <= 0 || G.thirst <= 0) ? '#ff6b6b' : '#fff';
 
@@ -2386,7 +3258,7 @@ function render(dt) {
     };
     const row = f => `<div class="${f.dead ? 'dead' : ''}">${f.name} — ${status(f)}${f.role === 'hider' && !f.dead ? ` · 🔫${f.ammo}` : ''}</div>`;
     const alive = G.friends.filter(f => !f.dead).length;
-    friendsEl.innerHTML = `<b>친구 ${alive}/10</b> · 막힌 문 ${G.doors.filter(d => d.hp > 0).length}/10<div class="rows">
+    friendsEl.innerHTML = `<b>친구 ${alive}/10</b> · 막힌 문 ${G.doors.filter(d => d.hp > 0).length}/${G.doors.length}<div class="rows">
       <div style="color:#ffc078;margin-top:4px">🔨 도구팀</div>${G.friends.slice(0, 5).map(row).join('')}
       <div style="color:#9be89b;margin-top:4px">🫣 숨기팀</div>${G.friends.slice(5).map(row).join('')}</div>`;
     layout();
@@ -2411,9 +3283,12 @@ function start() {
   $('bFlash').style.fontSize = JOB === 'survival' ? '26px' : '14px';
   $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
   running = true;
-  flash('도구팀은 문을 막고, 숨기팀은 숨는다! 괴물이 곧 깨어납니다…', 4);
+  flash(TEST ? '🧪 테스트 모드: 괴물 없이 마음껏 둘러보세요!' : '도구팀은 문을 막고, 숨기팀은 숨는다! 괴물이 곧 깨어납니다…', 4);
 }
-document.querySelectorAll('[data-diff]').forEach(b => b.onclick = () => { DIFF = DIFFS[b.dataset.diff]; start(); });
+document.querySelectorAll('[data-diff]').forEach(b => b.onclick = () => { TEST = false; DIFF = DIFFS[b.dataset.diff]; start(); });
+$('testBtn').onclick = () => { TEST = true; DIFF = DIFFS.test; start(); };
+$('tDawn').onclick = e => { e.stopPropagation(); if (running && G && !G.over) end(true); };
+$('tEaten').onclick = e => { e.stopPropagation(); if (running && G && !G.over) caught('(테스트) 괴물에게 너무 가까이 갔습니다…'); };
 // 직업 / 무기 선택
 const JOB_DESC = {
   survival: '🔦 서바이벌: 손전등으로 어두운 집 안을 밝게 비출 수 있어요. (다른 직업은 손전등이 없어요)',
@@ -2432,6 +3307,18 @@ document.querySelectorAll('[data-weapon]').forEach(b => b.onclick = () => {
   document.querySelectorAll('[data-weapon]').forEach(x => x.classList.toggle('sel', x === b));
 });
 pickJob('survival');
+// 🗺️ 맵 고르기 — 다른 맵을 누르면 그 맵으로 페이지를 다시 불러옴
+$('mapPick').innerHTML = Object.entries(MAPS).map(([id, m]) =>
+  `<button data-map="${id}" class="${id === MAP_ID ? 'sel' : ''}">${m.icon} ${m.name}<small>${id === MAP_ID ? '✔ 선택됨' : '눌러서 바꾸기'}</small></button>`).join('');
+$('mapPick').querySelectorAll('[data-map]').forEach(b => b.onclick = () => {
+  if (b.dataset.map === MAP_ID) return;
+  try { const u = new URL(location.href); u.searchParams.set('map', b.dataset.map); location.href = u.toString(); }
+  catch (e) { location.search = '?map=' + b.dataset.map; }
+});
+$('mapDesc').textContent = MD.desc;
+$('mapAmmo').textContent = MD.ammo.room;
+$('mapWhere').textContent = MD.where.replace(/^.*?(\S+)$/, '$1');
+$('mapFood').textContent = HOUSE ? '부엌의 냉장고·싱크대' : `${MD.food.name}·${MD.water.name}`;
 $('retryBtn').onclick = start;
 $('menuBtn').onclick = () => { running = false; $('endScreen').classList.add('hidden'); $('startScreen').classList.remove('hidden'); };
 buildBackground();
